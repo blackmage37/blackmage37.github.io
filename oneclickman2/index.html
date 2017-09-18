@@ -1,0 +1,64 @@
+<html>
+	<head>
+		
+		<title>One-Click Man</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+	
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/7.1.1/decimal.min.js"></script>
+    <script src="./swarm-numberformat.js"></script>
+  
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+			ga('create', 'UA-96927802-1', 'auto');
+			ga('send', 'pageview');
+		</script>
+	
+	</head>
+	<body>
+	
+		<section>
+		
+			<!-- display power level -->
+			Power Level: <span id="powerLevel">0</span>
+			<br />Cash: <span id="cash">0</span>
+			<br />
+			<br />Training Level: <span id="trainLvl">1</span>
+			<br />Auto Trainers: <span id="AutoTrainers">0</span>
+			<br />Current clothing weight: <span id="clothesLevel">0</span>
+			<br />
+			<br />
+			<!-- initial button to train power level -->
+			<button type="button" onclick="incPower(trainLvl)">Train!</button>
+			<!-- initial button to get cash -->
+			<br />
+			<button type="button" onclick="getCash(cashLvl)">Run errands for cash</button>
+			<!-- fight a boss (gain followers who generate cash) -->
+			<br /><button type="button" onclick="fightBoss()">Fight the boss! (Min. PL: <span id="discipleCost">100</span>)</button>
+			<br />Disciples: <span id="disciples">0</span>
+			<br />
+			<br />
+			<!-- buy weighted clothes / trainers -->
+			<button type="button" onclick="buyClothes()">Buy weighted clothing (Cost: <span id="clothesCost">10</span>)</button>
+			<br /><button type="button" onclick="buyAutoTrainer()">Hire a trainer (Cost: <span id="atCost">50</span>)</button>
+			<br />
+			<br />
+			<br />
+			<button type="button" onclick="saveGame('manual')">Save Game</button>&nbsp;
+			<button type="button" onclick="loadGame()">Load Game</button>&nbsp;
+			<button type="button" onclick="deleteSave()">Delete Save</button>
+			<br />
+			<button type="button" onclick="refreshPageValues()">Refresh Counters</button>
+      <br />(Sometimes this is necessary)
+			
+			<!-- include the main game code; load saved game if one exists -->
+			<script type="text/javascript" src="main2.js"></script>
+			
+		</section>
+		
+	</body>
+	
+</html>
