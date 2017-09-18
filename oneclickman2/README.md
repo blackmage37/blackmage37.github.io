@@ -1,12 +1,11 @@
-# One-click Man
+# One-click Man II
 <br />Just an experiment, really. A basic incremental/clicker game which sort of parodies/pays homage to manga series like DBZ 
 and One-punch man. I'll probably keep adding to this as a testing ground whenever I have time, or a new idea takes me.
+<br />This is the second version, I won't be making many changes to version one from this point on.
 
 ## History
-<br />2017-06-04
-<br />v0.11 -- First version uploaded to GitHub, added save/load functionality. Created README and LICENSE files.
-<br />2017-06-03
-<br />v0.1  -- Initial version written. No save function.
+<br />
+<br />
 
 ## Credits
 <br />Basics of creating an incremental from David Stark (http://dhmholley.co.uk)
