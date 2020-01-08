@@ -1,5 +1,5 @@
 @font-face {
-  font-family: 3Dventure;
+  font-family: threeDeeVenture;
   src: url('3Dventure.woff') format('woff');
 }
 @font-face {
@@ -39,10 +39,10 @@
   word-break: normal;
   border-color: black;
 }
-.tg .3Dventure{
+.tg .threeDeeVenture{
   text-align: left;
   vertical-align: top;
-  font-family: 3Dventure;
+  font-family: threeDeeVenture;
 }
 .tg .Aesthetic{
   text-align: left;
