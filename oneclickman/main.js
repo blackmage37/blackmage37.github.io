@@ -105,7 +105,7 @@ function refreshPageValues() {
 
 function presentNumber(number) {
 	var output = Math.round(number);
-	return output.ToLocaleString('en-GB');
+	return String(output).replace(/(.)(?=(\d{3})+$)/g,'$1,');
 };
 
 function incPower(num) {
