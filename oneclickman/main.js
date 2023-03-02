@@ -28,6 +28,8 @@ var bossesBeaten = 0;
 var disciples = 0;
 var discipleCost = Math.floor(100 * Math.pow(1.5,bossesBeaten));
 
+var cashPerClick = Math.Max(1, (cashLvl * disciples));
+
 // --------------------------------------------
 // functions
 // --------------------------------------------
@@ -41,6 +43,7 @@ function saveGame(saveType) {
 		saveClothesLevel: clothesLevel,
 		saveClothesCost: clothesCost,
 		saveCashLvl: cashLvl,
+		saveCashPerClick: cashPerClick,
 		saveTrainLvl: trainLvl,
 		saveBossesBeaten: bossesBeaten,
 		saveDisciples: disciples,
@@ -65,6 +68,7 @@ function loadGame() {
 	if (typeof gameSave.saveClothesLevel !== "undefined") clothesLevel = gameSave.saveClothesLevel;
 	if (typeof gameSave.saveClothesCost !== "undefined") clothesCost = gameSave.saveClothesCost;
 	if (typeof gameSave.saveCashLvl !== "undefined") cashLvl = gameSave.saveCashLvl;
+	if (typeof gameSave.saveCashPerClick !== "undefined") cashPerClick = gameSave.saveCashPerClick;
 	if (typeof gameSave.saveTrainLvl !== "undefined") trainLvl = gameSave.saveTrainLvl;
 	if (typeof gameSave.saveBossesBeaten !== "undefined") bossesBeaten = gameSave.saveBossesBeaten;
 	if (typeof gameSave.saveDisciples !== "undefined") disciples = gameSave.saveDisciples;
@@ -94,6 +98,7 @@ function refreshPageValues() {
 	document.getElementById("prestige").innerHTML = presentNumber(prestige);
 
 	document.getElementById("cashLvl").innerHTML = presentNumber(cashLvl);
+	document.getElementById("cashPerClick").innerHTML = presentNumber(cashPerClick);
 	document.getElementById("trainLvl").innerHTML = presentNumber(trainLvl);
 	document.getElementById("cashFactor").innerHTML = presentNumber(cashFactor);
 
@@ -188,7 +193,6 @@ function fightBoss(){
 window.onload = function() {
 	
 	loadGame();
-	refreshPageValues();
 	
 };
 
