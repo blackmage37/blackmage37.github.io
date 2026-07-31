@@ -44,6 +44,16 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
   - **Trigramme Flag System:** Replace text-based nationality trigrammes (e.g., `AKC`, `CBR`) with local flag icons named after their trigramme code (e.g., `/flags/AKC.png`).
 - [ ] **2.3 Competition Tags in Fixtures**
   - Update the **Upcoming Fixtures** table to include a dedicated column displaying the relevant competition name (e.g., *Ligue Akach*, *Léopold Touré Shield*, *Karamu Plate* etc).
+- [ ] **2.4 Stat Leader Widgets**
+  - Add top scorer, most assists, etc as cards at the top of the page.
+    - Card header: Stat
+    - Below left: Player portrait
+    - Below right: Player name and count/value
+- [ ] **2.5 Add Quota/Cap Trackers**
+  - Add a widget at the top to show graph bars representing rules and restrictions, using green/amber/red indicators for statuses:
+    * Percentage of salary cap used 
+    * Number of overseas players 
+    * Number of homegrown / club-trained players 
 
 ---
 
