@@ -6,15 +6,15 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
 
 ## 📌 Status Overview
 
-| Phase | Focus Area | Status |
-| :--- | :--- | :--- |
-| **Phase 1** | Core Layout, UI Scaling & Dynamic Contrast | 🟡 In Progress |
-| **Phase 2** | Squad Roster Enhancements & Data Formatting | 🔴 Planned |
-| **Phase 3** | Financial Engine & Valuations | 🔴 Planned |
-| **Phase 4** | Advanced Squad Analytics & Attribute Schema | 🔴 Planned |
-| **Phase 5** | Tactical & Transfer Market Side Widgets | 🔴 Planned |
-| **Phase 6** | Expanded Hub Ecosystem (addition of standalone pages) | 🔴 Planned |
-| **Phase 7** | Full Integration with Ikenga (full simulation software) | 🔴 Planned |
+| Phase | Focus Area | Status | Progress
+| :--- | :--- | :--- | :---
+| **Phase 1** | Core Layout, UI Scaling & Dynamic Contrast | 🟡 In Progress | 🟢🔴🔴
+| **Phase 2** | Squad Roster Enhancements & Data Formatting | 🔴 Planned | 🔴🔴🔴🔴🔴🔴
+| **Phase 3** | Financial Engine & Valuations | 🔴 Planned | 🔴🔴
+| **Phase 4** | Advanced Squad Analytics & Attribute Schema | 🔴 Planned | 🔴🔴🔴🔴🔴
+| **Phase 5** | Tactical & Transfer Market Side Widgets | 🔴 Planned | 🔴🔴🔴
+| **Phase 6** | Expanded Hub Ecosystem (addition of standalone pages) | 🔴 Planned | 🔴🔴🔴
+| **Phase 7** | Full Integration with Ikenga (full simulation software) | 🔴 Planned | 🔴
 
 ---
 
@@ -54,7 +54,13 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
     * Percentage of salary cap used 
     * Number of overseas players 
     * Number of homegrown / club-trained players 
-
+- [ ] **2.6 Advanced Position Map & Proficiency Heatmap Tooltip**
+  - Refactor player position attributes into a structured map (`positions: { "DC": 100, "DR": 75 }`).
+  - Render a primary position tag in the squad table with an interactive hover tooltip displaying a miniature pitch diagram.
+  - Colour-code position nodes on the pitch map based on proficiency ratings:
+    - 🟢 **Green** ($85\text{--}100$): Natural
+    - 🟡 **Amber** ($65\text{--}84$): Accomplished
+    - 🟠 **Red** ($45\text{--}64$): Emergency
 ---
 
 ### 💰 Phase 3: Financial Engine & Player Valuation Algorithm
@@ -115,7 +121,11 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
   - *Triggered via:* `View All Rumours →` on the Rumours widget **OR** `View All Transfers` on the Transfers widget
   - *Features:* Completed transfers feed, league-wide transfer list, and filterable rumour mill.
   - Consider archiving this page after each transfer window to allow a historic reference (an associated historical index page will be needed for navigation).
-
+- [ ] **6.3 Individual Player Pages (`players/A95001.html`)**
+  - *Triggered via:* `Squad Table →` Click on the player name.
+  - Each page named for the player ID in the database
+  - *Features:* Overall stats, Appearances table, Position proficiency map, Club history table, Transfer value history line graph
+  
 ---
 
 ## 🛠️ Tech Stack & Conventions
