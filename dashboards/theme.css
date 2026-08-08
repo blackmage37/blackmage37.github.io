@@ -127,7 +127,8 @@
     }
 
     .header-content {
-      max-width: 1000px;
+      max-width: 1400px;
+      width: 90%;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -165,7 +166,8 @@
     }
 
     main {
-      max-width: 85%;
+      max-width: 1400px;
+      width: 90%;
       margin: 24px auto 0;
       padding: 0 20px;
     }
@@ -241,13 +243,24 @@
       margin-bottom: 32px;
     }
 
-    @media (min-width: 850px) {
+    @media (min-width: 900px) {
       .dashboard-row {
-        grid-template-columns: 1fr 300px;
+        grid-template-columns: 1fr 280px;
       }
     }
 
-    /* Next Match Widget Styling */
+       /* Prevent Squad Table Name Column from Wrapping or Crushing */
+       #squad-table td:nth-child(3) {
+         white-space: nowrap; /* Prevents long player names from wrapping awkwardly */
+         min-width: 180px;
+       }
+       
+       #squad-table th, 
+       #squad-table td {
+         padding: 12px 14px; /* Slightly increase cell padding */
+       }
+
+       /* Next Match Widget Styling */
     .next-match-card {
       background: var(--card-bg);
       border: 1px solid var(--border-line);
