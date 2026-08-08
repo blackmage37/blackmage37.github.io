@@ -124,12 +124,12 @@ const leagueDatabase = {
 	  { player_id: "A8618", num: 10, name: "Aïssatou BOUMEDIENNE", nat: "AKC", gender: "F", primaryPos: "AMC", age: 30, rating: 74, isStarter: false, squadStatus: "Veteran", archetype: "Penetrator", wage: 0.78, positions: { "AMC": 100, "MC": 80 } },
 	  { player_id: "A9018", num: 11, name: "Marie DOUIS", nat: "AKC", gender: "F", primaryPos: "FL", age: 27, rating: 86, isStarter: true, squadStatus: "Key Player", archetype: "Rapid", wage: 1.42, positions: { "FL": 100, "AML": 90 } },
 	  { player_id: "A8306", num: 12, name: "Abou LUMUMBA", nat: "AKC", gender: "M", primaryPos: "GK", age: 33, rating: 64, isStarter: false, squadStatus: "Backup", archetype: "Acrobat", wage: 0.89, positions: { "GK": 100 } },
-	  { player_id: "A8903", num: 14, name: "Von VIGIL", nat: "AKC", gender: "M", primaryPos: "FL", age: 28, rating: 69, isStarter: false, squadStatus: "Veteran", archetype: "Harrier", wage: 1.62, positions: { "FL": 100, "CF": 70, "AML": 70 } },
+	  { player_id: "A8903", num: 14, name: "Von VIGIL", nat: "AKC", gender: "X", primaryPos: "FL", age: 28, rating: 69, isStarter: false, squadStatus: "Veteran", archetype: "Harrier", wage: 1.62, positions: { "FL": 100, "CF": 70, "AML": 70 } },
 	  { player_id: "A9416", num: 17, name: "Léontine THÉPOT", nat: "AKC", gender: "F", primaryPos: "FR", age: 22, rating: 67, isStarter: false, squadStatus: "Backup", archetype: "Rapid", wage: 1.14, positions: { "FR": 100, "AMR": 70 } },
 	  { player_id: "A8913", num: 18, name: "Alfred BOUMEDIENNE", nat: "AKC", gender: "M", primaryPos: "DR", age: 27, rating: 68, isStarter: true, squadStatus: "Veteran", archetype: "Winguardian", wage: 1.19, positions: { "DR": 100, "DL": 85 } },
 	  { player_id: "A8729", num: 19, name: "Angélina MUKÒSI", nat: "AKC", gender: "F", primaryPos: "MC", age: 29, rating: 78, isStarter: true, squadStatus: "Prospect", archetype: "Metronome", wage: 1.75, positions: { "MC": 100, "ML": 85, "DMC": 60 } },
 	  { player_id: "A9406", num: 26, name: "Perle MARTINI", nat: "AKC", gender: "F", primaryPos: "AMC", age: 23, rating: 69, isStarter: false, squadStatus: "Rotation", archetype: "Penetrator", wage: 0.21, positions: { "AMC": 100, "AMR": 85 } },
-	  { player_id: "X9601", num: 23, name: "Dieumerci POURRIEN", nat: "AKC", gender: "X", primaryPos: "AMC", age: 22, rating: 91, isStarter: true, squadStatus: "Key Player", archetype: "Advancer", wage: 1.65, positions: { "AMC": 100, "AMR": 98, "AML": 95, "CF": 85, "LW": 90, "RW": 90 } }
+	  { player_id: "X9601", num: 23, name: "Dieumerci POURRIEN", nat: "AKC", gender: "M", primaryPos: "AMC", age: 22, rating: 91, isStarter: true, squadStatus: "Key Player", archetype: "Advancer", wage: 1.65, positions: { "AMC": 100, "AMR": 98, "AML": 95, "CF": 85, "LW": 90, "RW": 90 } }
 	],
 	fixtures: [
 	  { opponent: "FC Rockbridge", venue: "Neutral", date: "2026-08-09", competition: "KP" },
