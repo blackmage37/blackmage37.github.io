@@ -23,7 +23,7 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
 ### 📐 Phase 1: Layout Scaling & Dynamic Contrast Auto-Tuning
 > *Goal: Expand dashboard screen real estate, decouple static values, and guarantee 100% WCAG-compliant text readability regardless of dynamic team palettes.*
 
-- [ ] **1.1 Expanded Container Width**
+- [x] **1.1 Expanded Container Width**
   - Increase `<main>` container max-width (or convert to a flexible high-percentage layout) to take up significantly more window width on widescreen displays.
 - [x] **1.2 Data-Driven Club Overview**
   - Bind all profile fields (`nickname`, `stadium.name`, `stadium.capacity`, `stadium.photo`, `staff.senior.manager`, `squad[captain]`, `sponsor.name`, `sponsor.logo`) dynamically to the active `leagueDatabase` object.
