@@ -8,8 +8,8 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
 
 | Phase | Focus Area | Status | Progress
 | :--- | :--- | :--- | :---
-| **Phase 1** | Core Layout, UI Scaling & Dynamic Contrast | 🟡 In Progress | 🟢🔴🔴
-| **Phase 2** | Squad Roster Enhancements & Data Formatting | 🔴 Planned | 🔴🔴🔴🔴🔴🔴
+| **Phase 1** | Core Layout, UI Scaling & Dynamic Contrast | 🟡 In Progress | 🟢🟢🔴
+| **Phase 2** | Squad Roster Enhancements & Data Formatting | 🔴 Planned | 🔴🟢🟢🟢🔴🔴🟢
 | **Phase 3** | Financial Engine & Valuations | 🔴 Planned | 🔴🔴
 | **Phase 4** | Advanced Squad Analytics & Attribute Schema | 🔴 Planned | 🔴🔴🔴🔴🔴
 | **Phase 5** | Tactical & Transfer Market Side Widgets | 🔴 Planned | 🔴🔴🔴
@@ -25,7 +25,7 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
 
 - [ ] **1.1 Expanded Container Width**
   - Increase `<main>` container max-width (or convert to a flexible high-percentage layout) to take up significantly more window width on widescreen displays.
-- [ ] **1.2 Data-Driven Club Overview**
+- [x] **1.2 Data-Driven Club Overview**
   - Bind all profile fields (`nickname`, `stadium.name`, `stadium.capacity`, `stadium.photo`, `staff.senior.manager`, `squad[captain]`, `sponsor.name`, `sponsor.logo`) dynamically to the active `leagueDatabase` object.
 - [ ] **1.3 Universal Color-Pass Contrast Resolver**
   - Refactor all elements utilising secondary accent styling (`.card .label`, `h2`, `th`, active radio inputs) to calculate background-versus-text contrast dynamically via `getReadableTextColor(bgColor, preferredColor)`.
@@ -39,22 +39,27 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
   - Add click-to-sort functionality on Squad Roster column headers:
     - Shirt Number (`#`), Name, Age, Rating, Nationality, Archetype, Wage, Value.
   - Implement a custom position priority map under the hood (e.g., `GK: 1, DC: 2, DL: 3, DR: 4...`) to allow logical pitch-order sorting for the Position column.
-- [ ] **2.2 Gender Symbols & Flag Integration**
+- [x] **2.2 Gender Symbols & Flag Integration**
   - **Gender Indicators:** Render a subtle gender symbol (e.g., ♂ / ♀) directly before player names.
   - **Trigramme Flag System:** Replace text-based nationality trigrammes (e.g., `AKC`, `CBR`) with local flag icons named after their trigramme code (e.g., `/flags/AKC.png`).
-- [ ] **2.3 Competition Tags in Fixtures**
+- [x] **2.3 Captain Armband Badge (`=C=`)** 🟡 [Proof of Concept](https://jsfiddle.net/chamber37/1gLj3oqp/)
+  - Render a stylized captain's armband box (`=C=`) next to the team captain's name in the squad table.
+  - Implement a dual-check resolver: evaluate `player.captainOrder` first, falling back to matching against `team.captain` metadata.
+    - `1` for captain, `2` for vice-captain, etc. If the value is missing, default to `99` to ensure missing values don't break the hierarchy
+  - Implement a matchday resolver function that assigns the `=C=` armband to the player with the lowest `captainOrder` rank present in any active starting XI lineup.
+- [x] **2.4 Competition Tags in Fixtures**
   - Update the **Upcoming Fixtures** table to include a dedicated column displaying the relevant competition name (e.g., *Ligue Akach*, *Léopold Touré Shield*, *Karamu Plate* etc).
-- [ ] **2.4 Stat Leader Widgets**
+- [ ] **2.5 Stat Leader Widgets**
   - Add top scorer, most assists, etc as cards at the top of the page.
     - Card header: Stat
     - Below left: Player portrait
     - Below right: Player name and count/value
-- [ ] **2.5 Add Quota/Cap Trackers**
+- [ ] **2.6 Add Quota/Cap Trackers**
   - Add a widget at the top to show graph bars representing rules and restrictions, using green/amber/red indicators for statuses:
     * Percentage of salary cap used 
     * Number of overseas players 
     * Number of homegrown / club-trained players 
-- [ ] **2.6 Advanced Position Map & Proficiency Heatmap Tooltip**
+- [x] **2.7 Advanced Position Map & Proficiency Heatmap Tooltip** 🟡 [Proof of Concept](https://jsfiddle.net/chamber37/1gLj3oqp/)
   - Refactor player position attributes into a structured map (`positions: { "DC": 100, "DR": 75 }`).
   - Render a primary position tag in the squad table with an interactive hover tooltip displaying a miniature pitch diagram.
   - Colour-code position nodes on the pitch map based on proficiency ratings:
@@ -84,6 +89,7 @@ Welcome to the **League Dashboard** development roadmap. This document outlines 
     - 🥅 **SHO** (Shooting) | 🛡️ **DEF** (Defending) | 💪 **STR** (Strength)
 - [ ] **4.3 Interactive Player Attribute Drawer**
   - Add expandable row drawers or modal overlays to view individual player attribute cards.
+  - Add gradient colour to player overall ratings in the squad table, and each attribute in the expandable drawer
 - [ ] **4.4 Squad Strengths Widget (DEF / MID / ATK)**
   - Add a side widget calculating sector ratings across **Defense**, **Midfield**, and **Attack** rendered using animated horizontal progress bars.
 - [ ] **4.5 Squad Attribute Radar Chart**
