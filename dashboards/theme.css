@@ -802,6 +802,53 @@
 /* ==========================================
 9. STARTING XI PITCH WIDGET STYLES
 ========================================== */
+.starting-xi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+/* THE GREEN FIELD CONTAINER */
+.xi-pitch-graphic {
+  width: 100%;
+  max-width: 260px;
+  height: 320px;
+  background: #15803d; /* Field Green */
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  position: relative !important; /* Locks shirt icons inside this box */
+  margin: 0 auto;
+  overflow: visible;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Field Markings (Center Circle & Halfway Line) */
+.xi-pitch-graphic::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.xi-pitch-graphic::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+/* Shirt Badges & Nodes */
 .xi-player-node {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -834,11 +881,11 @@
   border-color: var(--league-secondary);
 }
 
-/* Custom Floating Popover Card */
+/* Hover Popover Cards */
 .xi-popover {
   display: none;
   position: absolute;
-  bottom: 130%; /* Float above the shirt badge */
+  bottom: 130%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -847,7 +894,6 @@
   white-space: nowrap;
 }
 
-/* Auto-flip below if node is near top of pitch (Y < 25%) */
 .xi-player-node.tooltip-below .xi-popover {
   bottom: auto;
   top: 130%;
@@ -863,7 +909,6 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* Popover Content Styling */
 .xi-card-popover {
   background: #0f172a;
   border: 1px solid var(--border-line);
@@ -894,8 +939,4 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-}
-  max-width: 58px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
