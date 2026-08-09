@@ -342,30 +342,25 @@ function renderStartingXIPitch(teamData) {
 
   // 3. Render shirt nodes onto the pitch map
   pitchContainer.innerHTML = starters.map(item => {
-    const p = item.player;
-    const posKey = item.slotPos;
-    
-    // Resolve coordinates using your helper function
-    const resolved = getPositionCoordinates(posKey);
-    if (!resolved || !resolved.coords) return '';
-
-    const { x, y } = resolved.coords;
-    const isCaptain = p.player_id === matchdayCaptainId;
-    const armbandHTML = isCaptain ? `<span class="captain-armband" style="font-size: 0.55rem; padding: 1px;" title="Matchday Captain">&equals;C&equals;</span>` : '';
-
-    // Extract surname or short name (e.g. "M. ROCHETEAU" -> "ROCHETEAU")
-    const lastName = p.name.split(' ').pop();
-
-    return `
-      <div class="xi-player-node" style="left: ${x}%; top: ${y}%;" title="${p.name} (${posKey})">
-        <div class="xi-shirt-badge">
-          ${p.num || '-'}
-        </div>
-        <div class="xi-player-name">
-          ${lastName}${armbandHTML}
-        </div>
-      </div>
-    `;
+	const p = item.player;
+	const posKey = item.slotPos;
+	  
+	const resolved = getPositionCoordinates(posKey);
+	if (!resolved || !resolved.coords) return '';
+	
+	const { x, y } = resolved.coords;
+	const isCaptain = p.player_id === matchdayCaptainId;
+	const captainTag = isCaptain ? " (C)" : "";
+	
+	return `
+	  <div class="xi-player-node" 
+	       style="left: ${x}%; top: ${y}%;" 
+	       title="#${p.num || '-'} ${p.name}${captainTag} — ${posKey}">
+	    <div class="xi-shirt-badge">
+	      ${p.num || '-'}
+	    </div>
+	  </div>
+	`;
   }).join("");
 }
 
