@@ -313,6 +313,8 @@ function renderNextFixtureWidget(fixtures = []) {
 }
 
 function renderStartingXIPitch(teamData) {
+	console.log("👉 renderStartingXIPitch called with data:", teamData);
+	
   const pitchContainer = document.getElementById("starting-xi-pitch");
   if (!pitchContainer) return;
 
