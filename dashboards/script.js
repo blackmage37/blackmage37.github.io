@@ -112,15 +112,20 @@ function getProficiencyColor(rating) {
 function getPositionCoordinates(posKey) {
   if (!posKey) return null;
   const key = posKey.toUpperCase();
-  // Check positionAliases first, otherwise fallback to raw key
-  const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[key]) ? positionAliases[key] : key;
   
-  // Use basePitchCoordinates if defined, or pitchCoordinates as fallback
-  const coordsMap = (typeof basePitchCoordinates !== 'undefined') ? basePitchCoordinates : pitchCoordinates;
+  // Resolve alias to canonical key (e.g. "LW" -> "FL", "CF" -> "FC", "ST" -> "FC")
+  const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[key]) 
+    ? positionAliases[key] 
+    : key;
+  
+  const coordsMap = (typeof basePitchCoordinates !== 'undefined') 
+    ? basePitchCoordinates 
+    : (typeof pitchCoordinates !== 'undefined' ? pitchCoordinates : null);
+    
   const coords = coordsMap ? coordsMap[canonicalKey] : null;
 
   return {
-    canonicalKey: canonicalKey,
+    canonicalKey: canonicalKey, // Single Source of Truth Position Name
     coords: coords
   };
 }
@@ -128,7 +133,6 @@ function getPositionCoordinates(posKey) {
 function generatePitchTooltip(player) {
   if (!player.positions) return '';
 
-  // Store resolved positions to prevent duplicate/overpainted nodes on the pitch
   const resolvedPositions = {};
 
   Object.keys(player.positions).forEach(posKey => {
@@ -139,10 +143,10 @@ function generatePitchTooltip(player) {
       const canonicalKey = resolved.canonicalKey;
       const rating = player.positions[posKey];
 
-      // Keep the highest rating if two aliases resolve to the same coordinate spot
+      // If two aliases exist (e.g. ST and CF), keep whichever has the higher rating
       if (!resolvedPositions[canonicalKey] || rating > resolvedPositions[canonicalKey].rating) {
         resolvedPositions[canonicalKey] = {
-          displayTag: rawKey,
+          displayTag: canonicalKey, // 👈 Uses single source of truth (e.g., FC instead of ST)
           coords: resolved.coords,
           rating: rating
         };
@@ -150,7 +154,6 @@ function generatePitchTooltip(player) {
     }
   });
 
-  // Render nodes using the resolved coordinates
   const nodesHTML = Object.keys(resolvedPositions).map(key => {
     const node = resolvedPositions[key];
     const bgColor = getProficiencyColor(node.rating);
@@ -312,9 +315,7 @@ function renderNextFixtureWidget(fixtures = []) {
   `;
 }
 
-function renderStartingXIPitch(teamData) {
-	console.log("👉 renderStartingXIPitch called with data:", teamData);
-	
+function renderStartingXIPitch(teamData) {	
   const pitchContainer = document.getElementById("starting-xi-pitch");
   if (!pitchContainer) return;
 
@@ -363,57 +364,45 @@ function renderStartingXIPitch(teamData) {
 
   // 5. Render shirt nodes
   pitchContainer.innerHTML = starters.map(item => {
-    const p = item.player;
-    const posKey = item.slotPos;
-    
-    // Attempt coordinate lookup via getPositionCoordinates or direct fallback
-    let coords = null;
-    if (typeof getPositionCoordinates === 'function') {
-      const res = getPositionCoordinates(posKey);
-      coords = res ? res.coords : null;
-    }
-    
-    // Fallback if getPositionCoordinates returns null
-    if (!coords) {
-      const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[posKey]) ? positionAliases[posKey] : posKey;
-      const map = (typeof basePitchCoordinates !== 'undefined') ? basePitchCoordinates : pitchCoordinates;
-      coords = map ? map[canonicalKey] : null;
-    }
+  const p = item.player;
+  const rawPosKey = item.slotPos;
+  
+  // Resolve canonical position name & coordinates
+  const resolved = getPositionCoordinates(rawPosKey);
+  const coords = resolved ? resolved.coords : null;
+  const displayPos = resolved ? resolved.canonicalKey : rawPosKey; // Normalized Base Position
+  
+  if (!coords) return '';
 
-    if (!coords) {
-      console.warn(`[Starting XI Widget] Coordinates not found for position "${posKey}".`);
-      return '';
-    }
+  const { x, y } = coords;
+  const isCaptain = p.player_id === matchdayCaptainId;
+  const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
+  
+  const flagHTML = renderFlagBadge(p.nat, p.nat2);
+  const genderHTML = renderGenderBadge(p.gender);
 
-    const { x, y } = coords;
-    const isCaptain = p.player_id === matchdayCaptainId;
-    const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
-    
-    const flagHTML = (typeof renderFlagBadge === 'function') ? renderFlagBadge(p.nat, p.nat2) : (p.nat || '');
-    const genderHTML = (typeof renderGenderBadge === 'function') ? renderGenderBadge(p.gender) : '';
+  const belowClass = y < 25 ? 'tooltip-below' : '';
 
-    // Auto-flip popover below if node is in top 25% of pitch
-    const belowClass = y < 25 ? 'tooltip-below' : '';
+  return `
+    <div class="xi-player-node ${belowClass}" style="left: ${x}%; top: ${y}%;">
+      <div class="xi-shirt-badge">
+        ${p.num || '-'}
+      </div>
 
-    return `
-      <div class="xi-player-node ${belowClass}" style="left: ${x}%; top: ${y}%;">
-        <div class="xi-shirt-badge">
-          ${p.num || '-'}
-        </div>
-
-        <div class="xi-popover">
-          <div class="xi-card-popover">
-            <div class="xi-card-header">
-              <span>${posKey}</span> • <span>RATING: ${p.rating}</span>
-            </div>
-            <div class="xi-card-name">
-              ${flagHTML} ${genderHTML} <strong>${p.name}</strong> ${armbandHTML}
-            </div>
+      <div class="xi-popover">
+        <div class="xi-card-popover">
+          <div class="xi-card-header">
+            <span>${displayPos}</span> • <span>RATING: ${p.rating}</span>
+          </div>
+          <div class="xi-card-name">
+            ${flagHTML} ${genderHTML} <strong>${p.name}</strong> ${armbandHTML}
           </div>
         </div>
       </div>
-    `;
-  }).join("");
+    </div>
+  `;
+}).join("");
+	
 }
 
 function selectTeam(teamId) {
