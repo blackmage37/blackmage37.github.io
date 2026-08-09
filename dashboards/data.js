@@ -108,6 +108,9 @@ const leagueDatabase = {
 	  name: "Parc des Sports", 
 	  capacity: 12500, 
 	  rating: 3,
+	  locale: "Dubisha",
+	  district: "Iton Valley",
+	  region: "Akach Sud",
 	  photo: "https://www.si.com/.image/t_share/MTY4MjYxMzY3MjQ4NTI4NTQ5/free-state-stadium-mangaungbloemfontain.jpg"
 	},
 	sponsor: { 
