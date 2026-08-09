@@ -316,29 +316,38 @@ function renderStartingXIPitch(teamData) {
   const pitchContainer = document.getElementById("starting-xi-pitch");
   if (!pitchContainer) return;
 
+  // 1. Guard check for missing data
   if (!teamData || !teamData.starting_xi || !teamData.squad) {
     pitchContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding-top: 140px;">No lineup set</div>`;
     return;
   }
 
-  const startingXIKeys = Object.keys(teamData.starting_xi);
-  
-  // 1. Resolve starting XI players from the squad array
-  const starters = startingXIKeys.map(key => {
-    const slot = teamData.starting_xi[key];
+  // 2. Normalize starting_xi whether it is an Array or an Object with numeric keys
+  const rawXI = teamData.starting_xi;
+  const startingSlots = Array.isArray(rawXI) ? rawXI : Object.values(rawXI);
+
+  // 3. Resolve starting XI players from the squad array
+  const starters = startingSlots.map(slot => {
+    if (!slot || !slot.player_id) return null;
     const player = teamData.squad.find(p => p.player_id === slot.player_id);
+    
+    if (!player) {
+      console.warn(`[Starting XI Widget] Player ID "${slot.player_id}" not found in squad.`);
+      return null;
+    }
+
     return {
       slotPos: slot.pos,
       player: player
     };
-  }).filter(item => item.player !== undefined);
+  }).filter(item => item !== null);
 
   if (starters.length === 0) {
     pitchContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding-top: 140px;">No matching starters found</div>`;
     return;
   }
 
-  // 2. Identify Matchday Captain (Lowest captainOrder among starters)
+  // 4. Identify Matchday Captain (Lowest captainOrder among starters)
   let matchdayCaptainId = null;
   const captainCandidate = starters.reduce((best, curr) => {
     const currOrder = curr.player.captainOrder ?? 99;
@@ -350,24 +359,38 @@ function renderStartingXIPitch(teamData) {
     matchdayCaptainId = captainCandidate.player.player_id;
   }
 
-  // 3. Render shirt nodes with custom styled popover cards
+  // 5. Render shirt nodes
   pitchContainer.innerHTML = starters.map(item => {
     const p = item.player;
     const posKey = item.slotPos;
     
-    // Resolve coordinates
-    const resolved = getPositionCoordinates(posKey);
-    const coords = resolved ? resolved.coords : null;
+    // Attempt coordinate lookup via getPositionCoordinates or direct fallback
+    let coords = null;
+    if (typeof getPositionCoordinates === 'function') {
+      const res = getPositionCoordinates(posKey);
+      coords = res ? res.coords : null;
+    }
     
-    if (!coords) return '';
+    // Fallback if getPositionCoordinates returns null
+    if (!coords) {
+      const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[posKey]) ? positionAliases[posKey] : posKey;
+      const map = (typeof basePitchCoordinates !== 'undefined') ? basePitchCoordinates : pitchCoordinates;
+      coords = map ? map[canonicalKey] : null;
+    }
+
+    if (!coords) {
+      console.warn(`[Starting XI Widget] Coordinates not found for position "${posKey}".`);
+      return '';
+    }
 
     const { x, y } = coords;
     const isCaptain = p.player_id === matchdayCaptainId;
     const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
-    const flagHTML = renderFlagBadge(p.nat, p.nat2);
-    const genderHTML = renderGenderBadge(p.gender);
+    
+    const flagHTML = (typeof renderFlagBadge === 'function') ? renderFlagBadge(p.nat, p.nat2) : (p.nat || '');
+    const genderHTML = (typeof renderGenderBadge === 'function') ? renderGenderBadge(p.gender) : '';
 
-    // Auto-flip popover below if node is in top 25% of pitch (forwards/wingers)
+    // Auto-flip popover below if node is in top 25% of pitch
     const belowClass = y < 25 ? 'tooltip-below' : '';
 
     return `
