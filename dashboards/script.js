@@ -112,11 +112,16 @@ function getProficiencyColor(rating) {
 function getPositionCoordinates(posKey) {
   if (!posKey) return null;
   const key = posKey.toUpperCase();
-  const canonicalKey = positionAliases[key] || key;
+  // Check positionAliases first, otherwise fallback to raw key
+  const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[key]) ? positionAliases[key] : key;
   
+  // Use basePitchCoordinates if defined, or pitchCoordinates as fallback
+  const coordsMap = (typeof basePitchCoordinates !== 'undefined') ? basePitchCoordinates : pitchCoordinates;
+  const coords = coordsMap ? coordsMap[canonicalKey] : null;
+
   return {
     canonicalKey: canonicalKey,
-    coords: basePitchCoordinates[canonicalKey] || null
+    coords: coords
   };
 }
 
@@ -328,6 +333,11 @@ function renderStartingXIPitch(teamData) {
     };
   }).filter(item => item.player !== undefined);
 
+  if (starters.length === 0) {
+    pitchContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding-top: 140px;">No matching starters found</div>`;
+    return;
+  }
+
   // 2. Identify Matchday Captain (Lowest captainOrder among starters)
   let matchdayCaptainId = null;
   const captainCandidate = starters.reduce((best, curr) => {
@@ -345,10 +355,13 @@ function renderStartingXIPitch(teamData) {
     const p = item.player;
     const posKey = item.slotPos;
     
+    // Resolve coordinates
     const resolved = getPositionCoordinates(posKey);
-    if (!resolved || !resolved.coords) return '';
+    const coords = resolved ? resolved.coords : null;
+    
+    if (!coords) return '';
 
-    const { x, y } = resolved.coords;
+    const { x, y } = coords;
     const isCaptain = p.player_id === matchdayCaptainId;
     const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
     const flagHTML = renderFlagBadge(p.nat, p.nat2);
