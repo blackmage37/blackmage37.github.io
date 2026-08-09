@@ -109,38 +109,69 @@ function getProficiencyColor(rating) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+function getPositionCoordinates(posKey) {
+  if (!posKey) return null;
+  const key = posKey.toUpperCase();
+  const canonicalKey = positionAliases[key] || key;
+  
+  return {
+    canonicalKey: canonicalKey,
+    coords: basePitchCoordinates[canonicalKey] || null
+  };
+}
+
 function generatePitchTooltip(player) {
   if (!player.positions) return '';
 
-  const nodesHTML = Object.keys(player.positions).map(posKey => {
-	const rating = player.positions[posKey];
-	const coords = pitchCoordinates[posKey];
-	if (!coords) return '';
+  // Store resolved positions to prevent duplicate/overpainted nodes on the pitch
+  const resolvedPositions = {};
 
-	const bgColor = getProficiencyColor(rating);
+  Object.keys(player.positions).forEach(posKey => {
+    const rawKey = posKey.toUpperCase();
+    const resolved = getPositionCoordinates(rawKey);
 
-	return `
-	  <div class="pitch-node" 
-		   style="left: ${coords.x}%; top: ${coords.y}%; background-color: ${bgColor};"
-		   title="${posKey}: ${rating}/100">
-		${posKey}
-	  </div>
-	`;
+    if (resolved && resolved.coords) {
+      const canonicalKey = resolved.canonicalKey;
+      const rating = player.positions[posKey];
+
+      // Keep the highest rating if two aliases resolve to the same coordinate spot
+      if (!resolvedPositions[canonicalKey] || rating > resolvedPositions[canonicalKey].rating) {
+        resolvedPositions[canonicalKey] = {
+          displayTag: rawKey,
+          coords: resolved.coords,
+          rating: rating
+        };
+      }
+    }
+  });
+
+  // Render nodes using the resolved coordinates
+  const nodesHTML = Object.keys(resolvedPositions).map(key => {
+    const node = resolvedPositions[key];
+    const bgColor = getProficiencyColor(node.rating);
+
+    return `
+      <div class="pitch-node" 
+           style="left: ${node.coords.x}%; top: ${node.coords.y}%; background-color: ${bgColor};"
+           title="${node.displayTag}: ${node.rating}/100">
+        ${node.displayTag}
+      </div>
+    `;
   }).join("");
 
   return `
-	<div class="pos-tooltip">
-	  <div class="pitch-card">
-		<div class="pitch-title">${player.name}</div>
-		<div class="pitch-graphic">${nodesHTML}</div>
-		<div class="pitch-legend">
-		  <div class="gradient-bar"></div>
-		  <div class="legend-labels">
-			<span>45</span><span>65</span><span>85</span><span>100</span>
-		  </div>
-		</div>
-	  </div>
-	</div>
+    <div class="pos-tooltip">
+      <div class="pitch-card">
+        <div class="pitch-title">${player.name}</div>
+        <div class="pitch-graphic">${nodesHTML}</div>
+        <div class="pitch-legend">
+          <div class="gradient-bar"></div>
+          <div class="legend-labels">
+            <span>45</span><span>65</span><span>85</span><span>100</span>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
