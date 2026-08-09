@@ -340,27 +340,41 @@ function renderStartingXIPitch(teamData) {
     matchdayCaptainId = captainCandidate.player.player_id;
   }
 
-  // 3. Render shirt nodes onto the pitch map
+  // 3. Render shirt nodes with custom styled popover cards
   pitchContainer.innerHTML = starters.map(item => {
-	const p = item.player;
-	const posKey = item.slotPos;
-	  
-	const resolved = getPositionCoordinates(posKey);
-	if (!resolved || !resolved.coords) return '';
-	
-	const { x, y } = resolved.coords;
-	const isCaptain = p.player_id === matchdayCaptainId;
-	const captainTag = isCaptain ? " (C)" : "";
-	
-	return `
-	  <div class="xi-player-node" 
-	       style="left: ${x}%; top: ${y}%;" 
-	       title="#${p.num || '-'} ${p.name}${captainTag} — ${posKey}">
-	    <div class="xi-shirt-badge">
-	      ${p.num || '-'}
-	    </div>
-	  </div>
-	`;
+    const p = item.player;
+    const posKey = item.slotPos;
+    
+    const resolved = getPositionCoordinates(posKey);
+    if (!resolved || !resolved.coords) return '';
+
+    const { x, y } = resolved.coords;
+    const isCaptain = p.player_id === matchdayCaptainId;
+    const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
+    const flagHTML = renderFlagBadge(p.nat, p.nat2);
+    const genderHTML = renderGenderBadge(p.gender);
+
+    // Auto-flip popover below if node is in top 25% of pitch (forwards/wingers)
+    const belowClass = y < 25 ? 'tooltip-below' : '';
+
+    return `
+      <div class="xi-player-node ${belowClass}" style="left: ${x}%; top: ${y}%;">
+        <div class="xi-shirt-badge">
+          ${p.num || '-'}
+        </div>
+
+        <div class="xi-popover">
+          <div class="xi-card-popover">
+            <div class="xi-card-header">
+              <span>${posKey}</span> • <span>RATING: ${p.rating}</span>
+            </div>
+            <div class="xi-card-name">
+              ${flagHTML} ${genderHTML} <strong>${p.name}</strong> ${armbandHTML}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   }).join("");
 }
 
