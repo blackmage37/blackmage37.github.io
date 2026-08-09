@@ -1,6 +1,6 @@
 /* ==========================================
-       1. DESIGN SYSTEM & CSS VARIABLES
-       ========================================== */
+1. DESIGN SYSTEM & CSS VARIABLES
+========================================== */
     :root {
       /* DEFAULT LEAGUE BRANDING */
       --league-primary: #013220;
@@ -34,9 +34,9 @@
       padding-bottom: 50px;
     }
 
-    /* ==========================================
-       2. SPLASH OVERLAY
-       ========================================== */
+/* ==========================================
+2. SPLASH OVERLAY
+========================================== */
     #splash {
       position: fixed;
       inset: 0;
@@ -116,9 +116,9 @@
       flex-shrink: 0;
     }
 
-    /* ==========================================
-       3. HEADER & DASHBOARD LAYOUT
-       ========================================== */
+/* ==========================================
+3. HEADER & DASHBOARD LAYOUT
+========================================== */
     header {
       background-color: var(--primary-color);
       border-bottom: 4px solid var(--secondary-color);
@@ -233,9 +233,9 @@
       transition: color 0.3s ease;
     }
 
-    /* ==========================================
-       4. 2-COLUMN GRID LAYOUT (SQUAD + NEXT MATCH)
-       ========================================== */
+/* ==========================================
+4. 2-COLUMN GRID LAYOUT (SQUAD + WIDGETS)
+========================================== */
     .dashboard-row {
       display: grid;
       grid-template-columns: 1fr;
@@ -327,9 +327,9 @@
       opacity: 0.9;
     }
 
-    /* ==========================================
-       5. RADIO TOGGLE STYLES
-       ========================================== */
+/* ==========================================
+5. RADIO TOGGLE STYLES
+========================================== */
     .radio-toggle-group {
       display: flex;
       background: rgba(255, 255, 255, 0.05);
@@ -436,9 +436,9 @@
       color: var(--primary-color);
     }
 
-    /* ==========================================
-       6. CLUB OVERVIEW CARD
-       ========================================== */
+/* ==========================================
+6. CLUB OVERVIEW CARD
+========================================== */
     .club-overview-card {
       background: var(--card-bg);
       border: 1px solid var(--border-line);
@@ -601,9 +601,9 @@
       text-overflow: ellipsis;
     }
 
-    /* ==========================================
-       7. BADGES, FLAGS & COMPETITION TAGS
-       ========================================== */
+/* ==========================================
+7. BADGES, FLAGS & COMPETITION TAGS
+========================================== */
     .gender-badge {
       display: inline-flex;
       align-items: center;
@@ -684,9 +684,9 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    /* ==========================================
-       8. POSITION CELL & AUTO-FLIP TOOLTIP STYLES
-       ========================================== */
+/* ==========================================
+8. POSITION CELL & AUTO-FLIP TOOLTIP STYLES
+========================================== */
     .pos-cell {
       position: relative;
       cursor: pointer;
@@ -798,3 +798,93 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
+
+/* ==========================================
+9. STARTING XI PITCH WIDGET STYLES
+========================================== */
+.starting-xi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.xi-pitch-graphic {
+  width: 100%;
+  max-width: 260px;
+  height: 320px;
+  background: #15803d; /* Field Green */
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Pitch Field Marking Lines */
+.xi-pitch-graphic::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+.xi-pitch-graphic::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Player Token on the Pitch */
+.xi-player-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  width: 54px;
+}
+
+.xi-shirt-badge {
+  width: 22px;
+  height: 22px;
+  background: var(--secondary-color);
+  color: var(--secondary-text-color);
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.xi-player-name {
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
