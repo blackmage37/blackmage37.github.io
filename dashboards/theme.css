@@ -551,7 +551,7 @@ tbody tr:hover {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 800;
-  color: var(--secondary-color);
+  color: var(--secondary-text-color);
   margin-bottom: 12px;
 }
 
