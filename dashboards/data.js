@@ -8,23 +8,34 @@ const nationalitiesDatabase = {
 const pitchCoordinates = {
   "GK":  { x: 50, y: 88 },
   "DL":  { x: 18, y: 72 },
+  "DLC":  { x: 36, y: 72 },
   "DC":  { x: 50, y: 72 },
+  "DRC":  { x: 64, y: 72 },
   "DR":  { x: 82, y: 72 },
   "DML": { x: 18, y: 58 },
+  "DMLC": { x: 36, y: 58 },
   "DMC": { x: 50, y: 58 },
+  "DMRC": { x: 64, y: 58 },
   "DMR": { x: 82, y: 58 },
   "ML":  { x: 18, y: 44 },
+  "MLC":  { x: 36, y: 44 },
   "MC":  { x: 50, y: 44 },
+  "MRC":  { x: 64, y: 44 },
   "MR":  { x: 82, y: 44 },
   "AML": { x: 18, y: 28 },
+  "AMLC": { x: 36, y: 28 },
   "AMC": { x: 50, y: 28 },
+  "AMRC": { x: 64, y: 28 },
   "AMR": { x: 82, y: 28 },
-  "ST":  { x: 50, y: 12 },
-  "CF":  { x: 50, y: 12 },
-  "FL":  { x: 18, y: 16 },
-  "FR":  { x: 82, y: 16 },
   "LW":  { x: 18, y: 24 },
-  "RW":  { x: 82, y: 24 }
+  "RW":  { x: 82, y: 24 },
+  "FL":  { x: 18, y: 16 },
+  "FLC":  { x: 36, y: 16 },
+  "FC":  { x: 50, y: 16 },
+  "CF":  { x: 50, y: 16 },
+  "FRC":  { x: 64, y: 16 },
+  "FR":  { x: 82, y: 16 },
+  "ST":  { x: 50, y: 12 }
 };
 	
 const leagueConfig = {
@@ -83,6 +94,19 @@ const leagueDatabase = {
 	  "cup-winner": [3, 4, 6, 8],
 	  "super-cup": [2, 3, 5, 6, 7]
 	},
+	starting_xi: {
+		1: { pos: "GK", player_id: "A8725" },
+		2: { pos: "DL", player_id: "A8725" },
+		3: { pos: "DLC", player_id: "A8725" },
+		4: { pos: "DRC", player_id: "A8725" },
+		5: { pos: "DR", player_id: "A8725" },
+		6: { pos: "DM", player_id: "A8725" },
+		7: { pos: "MLC", player_id: "A8725" },
+		8: { pos: "AMRC", player_id: "A8725" },
+		9: { pos: "LW", player_id: "A8725" },
+		10: { pos: "CF", player_id: "A8725" },
+		11: { pos: "RW", player_id: "A8725" }
+	},
 	staff: {
 	  "top-boss": {
 		title: "Owner",
@@ -117,7 +141,7 @@ const leagueDatabase = {
 	  { player_id: "A8611", num: 4, name: "Nathan LANDU", nat: "AKC", gender: "M", primaryPos: "MC", age: 31, rating: 77, isStarter: false, squadStatus: "Veteran", archetype: "Disruptor", wage: 0.61, positions: { "MC": 100 } },
 	  { player_id: "A8405", num: 5, name: "Charly BOUTELLA", nat: "AKC", gender: "M", primaryPos: "DC", age: 33, rating: 72, isStarter: true, squadStatus: "First XI", captainOrder: 1, archetype: "Instinctive", wage: 1.53, positions: { "DC": 100 } },
 	  { player_id: "A8619", num: 6, name: "Iraklis MUTOS", nat: "AKC", gender: "M", primaryPos: "DC", age: 30, rating: 73, isStarter: false, squadStatus: "Veteran", archetype: "Cultured", wage: 1.45, positions: { "DC": 100 } },
-	  { player_id: "F8601", num: 16, name: "Agustin MACIAS", nat: "YUC", nat2: "AKC", gender: "M", primaryPos: "DC", age: 30, rating: 73, isStarter: true, squadStatus: "Veteran", captainOrder: 2, archetype: "Athletic", wage: 2.00, positions: { "DC": 100 } },
+	  { player_id: "F8601", num: 16, name: "Agustin MACIAS", nat: "YUC", gender: "M", primaryPos: "DC", age: 30, rating: 73, isStarter: true, squadStatus: "Veteran", captainOrder: 2, archetype: "Athletic", wage: 2.00, positions: { "DC": 100 } },
 	  { player_id: "A9136", num: 7, name: "Yoann LUTIC", nat: "AKC", gender: "M", primaryPos: "FR", age: 25, rating: 76, isStarter: true, squadStatus: "Key Player", archetype: "Chalkfoot", wage: 1.53, positions: { "FR": 100, "AMR": 88, "CF": 65 } },
 	  { player_id: "A9417", num: 13, name: "Friday ENNUI", nat: "AKC", gender: "M", primaryPos: "CF", age: 22, rating: 81, isStarter: true, squadStatus: "Key Player", archetype: "Rapid", wage: 1.53, positions: { "CF": 100, "LW": 95, "RW": 95, "AML": 75, "AMR": 75 } },
 	  { player_id: "A9130", num: 8, name: "Avery ROBERTSON", nat: "AKC", gender: "M", primaryPos: "MC", age: 25, rating: 78, isStarter: true, squadStatus: "First XI", captainOrder: 3, archetype: "Dynamo", wage: 0.19, positions: { "MC": 100, "DMC": 65 } },
@@ -129,7 +153,7 @@ const leagueDatabase = {
 	  { player_id: "A8913", num: 18, name: "Alfred BOUMEDIENNE", nat: "AKC", gender: "M", primaryPos: "DR", age: 27, rating: 68, isStarter: true, squadStatus: "Veteran", archetype: "Winguardian", wage: 1.19, positions: { "DR": 100, "DL": 85 } },
 	  { player_id: "A8729", num: 19, name: "Angélina MUKÒSI", nat: "AKC", gender: "F", primaryPos: "MC", age: 29, rating: 78, isStarter: true, squadStatus: "Prospect", archetype: "Metronome", wage: 1.75, positions: { "MC": 100, "ML": 85, "DMC": 60 } },
 	  { player_id: "A9406", num: 26, name: "Perle MARTINI", nat: "AKC", gender: "F", primaryPos: "AMC", age: 23, rating: 69, isStarter: false, squadStatus: "Rotation", archetype: "Penetrator", wage: 0.21, positions: { "AMC": 100, "AMR": 85 } },
-	  { player_id: "X9601", num: 23, name: "Dieumerci POURRIEN", nat: "AKC", gender: "M", primaryPos: "AMC", age: 22, rating: 91, isStarter: true, squadStatus: "Key Player", archetype: "Advancer", wage: 1.65, positions: { "AMC": 100, "AMR": 98, "AML": 95, "CF": 85, "LW": 90, "RW": 90 } }
+	  { player_id: "X9601", num: 23, name: "Dieumerci POURRIEN", nat: "AKC", nat2: "CBR", gender: "M", primaryPos: "AMC", age: 22, rating: 91, isStarter: true, squadStatus: "Key Player", archetype: "Advancer", wage: 1.65, positions: { "AMC": 100, "AMR": 98, "AML": 95, "CF": 85, "LW": 90, "RW": 90 } }
 	],
 	fixtures: [
 	  { opponent: "FC Rockbridge", venue: "Neutral", date: "2026-08-09", competition: "KP" },
