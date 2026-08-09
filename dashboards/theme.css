@@ -858,19 +858,25 @@
 }
 
 .xi-shirt-badge {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background: var(--secondary-color);
   color: var(--secondary-text-color);
-  border: 1.5px solid #ffffff;
+  border: 2px solid #ffffff;
   border-radius: 50%;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: transform 0.15 ease;
+}
+
+.xi-shirt-badge:hover {
+  transform: scale(1.15);
+  z-index: 10;
 }
 
 .xi-player-name {
