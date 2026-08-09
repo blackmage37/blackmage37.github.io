@@ -5,37 +5,63 @@ const nationalitiesDatabase = {
   "YUC": { name: "Yucatán", flag: "https://nssportwiki.com/images/thumb/e/ed/Flag_of_Yucatan.png/300px-Flag_of_Yucatan.png" }
 };
 
-const pitchCoordinates = {
-  "GK":  { x: 50, y: 88 },
-  "DL":  { x: 18, y: 72 },
-  "DLC":  { x: 36, y: 72 },
-  "DC":  { x: 50, y: 72 },
-  "DRC":  { x: 64, y: 72 },
-  "DR":  { x: 82, y: 72 },
-  "DML": { x: 18, y: 58 },
+// 1. PHYSICAL GRID DEFINITIONS (Single Source of Truth)
+const basePitchCoordinates = {
+  // Goalkeeper
+  "GK":   { x: 50, y: 88 },
+
+  // Defenders (Y: 72)
+  "LB":   { x: 18, y: 72 },
+  "LCB":  { x: 36, y: 72 },
+  "CB":   { x: 50, y: 72 },
+  "RCB":  { x: 64, y: 72 },
+  "RB":   { x: 82, y: 72 },
+
+  // Defensive Midfielders (Y: 58)
+  "LWB":  { x: 18, y: 58 },
   "DMLC": { x: 36, y: 58 },
-  "DMC": { x: 50, y: 58 },
+  "DMC":  { x: 50, y: 58 },
   "DMRC": { x: 64, y: 58 },
-  "DMR": { x: 82, y: 58 },
-  "ML":  { x: 18, y: 44 },
-  "MLC":  { x: 36, y: 44 },
-  "MC":  { x: 50, y: 44 },
-  "MRC":  { x: 64, y: 44 },
-  "MR":  { x: 82, y: 44 },
-  "AML": { x: 18, y: 28 },
+  "RWB":  { x: 82, y: 58 },
+
+  // Central Midfielders (Y: 44)
+  "LM":   { x: 18, y: 44 },
+  "LCM":  { x: 36, y: 44 },
+  "CM":   { x: 50, y: 44 },
+  "RCM":  { x: 64, y: 44 },
+  "RM":   { x: 82, y: 44 },
+
+  // Attacking Midfielders (Y: 28)
+  "AML":  { x: 18, y: 28 },
   "AMLC": { x: 36, y: 28 },
-  "AMC": { x: 50, y: 28 },
+  "AMC":  { x: 50, y: 28 },
   "AMRC": { x: 64, y: 28 },
-  "AMR": { x: 82, y: 28 },
-  "LW":  { x: 18, y: 24 },
-  "RW":  { x: 82, y: 24 },
-  "FL":  { x: 18, y: 16 },
-  "FLC":  { x: 36, y: 16 },
-  "FC":  { x: 50, y: 16 },
-  "CF":  { x: 50, y: 16 },
-  "FRC":  { x: 64, y: 16 },
-  "FR":  { x: 82, y: 16 },
-  "ST":  { x: 50, y: 12 }
+  "AMR":  { x: 82, y: 28 },
+
+  // Forwards / Wingers (Y: 12)
+  "LW":   { x: 18, y: 12 },
+  "FLC":  { x: 36, y: 12 },
+  "CF":   { x: 50, y: 12 },
+  "FRC":  { x: 64, y: 12 },
+  "RW":   { x: 82, y: 12 }
+};
+
+// POSITION ALIAS LOOKUP MAP
+const positionAliases = {
+  "DL": "LB",
+  "DLC": "LCB",
+  "DC": "CB",
+  "DRC": "RCB",
+  "DR": "RB",
+  "DML": "LWB",
+  "DMR": "RWB",
+  "ML": "LM",
+  "MC": "CM",
+  "MR": "RM",
+  "FL": "LW",
+  "FC": "CF",
+  "ST": "FC",
+  "FR": "RW"
 };
 	
 const leagueConfig = {
@@ -96,16 +122,16 @@ const leagueDatabase = {
 	},
 	starting_xi: {
 		1: { pos: "GK", player_id: "A8725" },
-		2: { pos: "DL", player_id: "A8725" },
-		3: { pos: "DLC", player_id: "A8725" },
-		4: { pos: "DRC", player_id: "A8725" },
-		5: { pos: "DR", player_id: "A8725" },
-		6: { pos: "DM", player_id: "A8725" },
-		7: { pos: "MLC", player_id: "A8725" },
-		8: { pos: "AMRC", player_id: "A8725" },
-		9: { pos: "LW", player_id: "A8725" },
-		10: { pos: "CF", player_id: "A8725" },
-		11: { pos: "RW", player_id: "A8725" }
+		2: { pos: "DL", player_id: "A8728" },
+		3: { pos: "DLC", player_id: "A8405" },
+		4: { pos: "DRC", player_id: "F8601" },
+		5: { pos: "DR", player_id: "A8913" },
+		6: { pos: "MLC", player_id: "A8729" },
+		7: { pos: "MRC", player_id: "A9130" },
+		8: { pos: "AMLC", player_id: "X9601" },
+		9: { pos: "LW", player_id: "A9018" },
+		10: { pos: "CF", player_id: "A9417" },
+		11: { pos: "RW", player_id: "A9136" }
 	},
 	staff: {
 	  "top-boss": {
