@@ -307,6 +307,68 @@ function renderNextFixtureWidget(fixtures = []) {
   `;
 }
 
+function renderStartingXIPitch(teamData) {
+  const pitchContainer = document.getElementById("starting-xi-pitch");
+  if (!pitchContainer) return;
+
+  if (!teamData || !teamData.starting_xi || !teamData.squad) {
+    pitchContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding-top: 140px;">No lineup set</div>`;
+    return;
+  }
+
+  const startingXIKeys = Object.keys(teamData.starting_xi);
+  
+  // 1. Resolve starting XI players from the squad array
+  const starters = startingXIKeys.map(key => {
+    const slot = teamData.starting_xi[key];
+    const player = teamData.squad.find(p => p.player_id === slot.player_id);
+    return {
+      slotPos: slot.pos,
+      player: player
+    };
+  }).filter(item => item.player !== undefined);
+
+  // 2. Identify Matchday Captain (Lowest captainOrder among starters)
+  let matchdayCaptainId = null;
+  const captainCandidate = starters.reduce((best, curr) => {
+    const currOrder = curr.player.captainOrder ?? 99;
+    const bestOrder = best ? (best.player.captainOrder ?? 99) : 99;
+    return currOrder < bestOrder ? curr : best;
+  }, null);
+
+  if (captainCandidate && (captainCandidate.player.captainOrder ?? 99) < 99) {
+    matchdayCaptainId = captainCandidate.player.player_id;
+  }
+
+  // 3. Render shirt nodes onto the pitch map
+  pitchContainer.innerHTML = starters.map(item => {
+    const p = item.player;
+    const posKey = item.slotPos;
+    
+    // Resolve coordinates using your helper function
+    const resolved = getPositionCoordinates(posKey);
+    if (!resolved || !resolved.coords) return '';
+
+    const { x, y } = resolved.coords;
+    const isCaptain = p.player_id === matchdayCaptainId;
+    const armbandHTML = isCaptain ? `<span class="captain-armband" style="font-size: 0.55rem; padding: 1px;" title="Matchday Captain">&equals;C&equals;</span>` : '';
+
+    // Extract surname or short name (e.g. "M. ROCHETEAU" -> "ROCHETEAU")
+    const lastName = p.name.split(' ').pop();
+
+    return `
+      <div class="xi-player-node" style="left: ${x}%; top: ${y}%;" title="${p.name} (${posKey})">
+        <div class="xi-shirt-badge">
+          ${p.num || '-'}
+        </div>
+        <div class="xi-player-name">
+          ${lastName}${armbandHTML}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 function selectTeam(teamId) {
   const selectedTeam = leagueDatabase[teamId];
   if (!selectedTeam) return;
@@ -411,6 +473,7 @@ function loadDashboard(data) {
   renderTrophyCabinet(data.honours);
   renderNextFixtureWidget(data.fixtures);
   renderSquadTable(data.squad);
+  renderStartingXIPitch(data);
 
   // Render Upcoming Fixtures with Competition Tags
   const fixturesTable = document.querySelector("#fixtures-table tbody");
