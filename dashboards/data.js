@@ -130,7 +130,7 @@ const leagueDatabase = {
 		5: { pos: "DR", player_id: "A8913" },
 		6: { pos: "MLC", player_id: "A8729" },
 		7: { pos: "MRC", player_id: "A9130" },
-		8: { pos: "AMLC", player_id: "X9601" },
+		8: { pos: "AMC", player_id: "X9601" },
 		9: { pos: "LW", player_id: "A9018" },
 		10: { pos: "CF", player_id: "A9417" },
 		11: { pos: "RW", player_id: "A9136" }
