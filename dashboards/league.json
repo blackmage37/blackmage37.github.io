@@ -476,5 +476,43 @@
         "competition": "LTS"
       }
     ]
+  },
+  "cheboygan-iron": {
+    "name": "Cheboygan Iron",
+    "nickname": "Cheboygan Iron",
+    "motto": "Elevation Through Adversity",
+    "crest": "https://placehold.co/300/101010/ffffff?text=CHE",
+    "stadium": {
+      "name": "The Ironworks",
+      "capacity": 8800,
+      "locale": "Cheboygan",
+      "district": "Sovietta",
+      "photo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Dynamo_stadium_in_Bryansk.JPG/1920px-Dynamo_stadium_in_Bryansk.JPG"
+    },
+    "sponsor": {
+      "name": "Titan Pillars",
+      "sector": "Construction",
+      "logo": "https://nssportwiki.com/images/6/63/Titan_Pillars.png"
+    },
+    "colors": {
+      "primary": "#660066",
+      "secondary": "#DFDFDF",
+      "accent": "#555555"
+    },
+    "stats": {
+      "rank": 2
+    },
+    "honours": {},
+    "starting_xi": {},
+    "staff": {
+      "senior": {
+        "manager": {
+          "name": "TBD",
+          "nat": "AKC"
+        }
+      }
+    },
+    "squad": [],
+    "fixtures": []
   }
 }
