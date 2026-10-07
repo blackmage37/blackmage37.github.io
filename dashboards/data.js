@@ -1,14 +1,6 @@
 // data.js
 import leagueData from './league.json' with { type: 'json' };
 
-// Also expose globally so existing non-module code can still access it seamlessly
-window.leagueDatabase = leagueData;
-window.leagueConfig = leagueConfig;
-window.competitions = competitions;
-window.nationalitiesDatabase = nationalitiesDatabase;
-window.basePitchCoordinates = basePitchCoordinates;
-window.positionAliases = positionAliases;
-
 // Nationalities Lookup Database
 const nationalitiesDatabase = {
   "AKC": { name: "Akach", flag: "https://nssportwiki.com/images/3/3d/AkachFlag.svg" },
@@ -108,3 +100,11 @@ const competitions = {
 	textColor: "#ffffff"
   }
 };
+
+// expose globally so existing non-module code can still access it seamlessly
+window.leagueDatabase = leagueData;
+window.leagueConfig = leagueConfig;
+window.competitions = competitions;
+window.nationalitiesDatabase = nationalitiesDatabase;
+window.basePitchCoordinates = basePitchCoordinates;
+window.positionAliases = positionAliases;
