@@ -512,7 +512,620 @@
         }
       }
     },
-    "squad": [],
+    "squad": [
+      {
+        "player_id": "A7902",
+        "num": 1,
+        "name": "Apollos AWONA",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "GK",
+        "age": 37,
+        "rating": 76,
+        "wage": 1.53,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "GK": 100
+        }
+      },
+      {
+        "player_id": "A8813",
+        "num": 2,
+        "name": "Tyrus OSEMELE",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RB",
+        "age": 29,
+        "rating": 68,
+        "wage": 1.18,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RB": 100
+        }
+      },
+      {
+        "player_id": "A9616",
+        "num": 3,
+        "name": "Reynald GALLAS",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "FB",
+        "age": 20,
+        "rating": 66,
+        "wage": 0.74,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "FB": 100
+        }
+      },
+      {
+        "player_id": "A8417",
+        "num": 4,
+        "name": "Beyla WOLENSKA",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "DM",
+        "age": 32,
+        "rating": 72,
+        "wage": 1.14,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "DM": 100
+        }
+      },
+      {
+        "player_id": "A8404",
+        "num": 5,
+        "name": "Gael GUILLOUX",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "CB",
+        "age": 33,
+        "rating": 62,
+        "wage": 1.41,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CB": 100
+        }
+      },
+      {
+        "player_id": "A8303",
+        "num": 6,
+        "name": "Paxton OHAI",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RCB",
+        "age": 34,
+        "rating": 78,
+        "wage": 1.24,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RCB": 100
+        }
+      },
+      {
+        "player_id": "A8501",
+        "num": 7,
+        "name": "Thomas SAVARY",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RM",
+        "age": 32,
+        "rating": 69,
+        "wage": 1.13,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RM": 100
+        }
+      },
+      {
+        "player_id": "A9430",
+        "num": 8,
+        "name": "Élise DAMBOUE",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "CM",
+        "age": 22,
+        "rating": 75,
+        "wage": 0.68,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CM": 100
+        }
+      },
+      {
+        "player_id": "A8905",
+        "num": 9,
+        "name": "Kadeg MORDELET",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "CF/RW",
+        "age": 28,
+        "rating": 67,
+        "wage": 1,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CF/RW": 100
+        }
+      },
+      {
+        "player_id": "A8413",
+        "num": 10,
+        "name": "Cortez INGRAM",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "AM",
+        "age": 32,
+        "rating": 79,
+        "wage": 1.41,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "AM": 100
+        }
+      },
+      {
+        "player_id": "A8302",
+        "num": 11,
+        "name": "Andrew NIANGALY",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "LW",
+        "age": 34,
+        "rating": 72,
+        "wage": 1.37,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "LW": 100
+        }
+      },
+      {
+        "player_id": "A8624",
+        "num": 13,
+        "name": "Areej ENNUI",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "CM",
+        "age": 30,
+        "rating": 76,
+        "wage": 1.06,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CM": 100
+        }
+      },
+      {
+        "player_id": "A9524",
+        "num": 14,
+        "name": "Abdel HANNACHI",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "CF/RW",
+        "age": 21,
+        "rating": 69,
+        "wage": 0.84,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CF/RW": 100
+        }
+      },
+      {
+        "player_id": "A9620",
+        "num": 16,
+        "name": "Makenzy ROBERTSON",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "RM",
+        "age": 20,
+        "rating": 68,
+        "wage": 0.65,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RM": 100
+        }
+      },
+      {
+        "player_id": "A8805",
+        "num": 17,
+        "name": "Grozdan SVAROVSKY",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "LCM",
+        "age": 29,
+        "rating": 79,
+        "wage": 1.27,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "LCM": 100
+        }
+      },
+      {
+        "player_id": "A8924",
+        "num": 18,
+        "name": "Félicité MADJER",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "RW",
+        "age": 27,
+        "rating": 61,
+        "wage": 1.2,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RW": 100
+        }
+      },
+      {
+        "player_id": "A8623",
+        "num": 19,
+        "name": "Lucas NSON",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "MID",
+        "age": 30,
+        "rating": 72,
+        "wage": 1.23,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "MID": 100
+        }
+      },
+      {
+        "player_id": "A9304",
+        "num": 20,
+        "name": "Diana BALABANOVA",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "RCM",
+        "age": 24,
+        "rating": 76,
+        "wage": 0.86,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RCM": 100
+        }
+      },
+      {
+        "player_id": "A9725",
+        "num": 21,
+        "name": "Nedeljka DONATILEVA",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "RB",
+        "age": 19,
+        "rating": 79,
+        "wage": 0.58,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RB": 100
+        }
+      },
+      {
+        "player_id": "A9127",
+        "num": 22,
+        "name": "Hakob KIABOU",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "CF/LW",
+        "age": 25,
+        "rating": 67,
+        "wage": 1.04,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CF/LW": 100
+        }
+      },
+      {
+        "player_id": "A8505",
+        "num": 23,
+        "name": "Zéphirin OUMMOUL",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RM",
+        "age": 32,
+        "rating": 75,
+        "wage": 1.37,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RM": 100
+        }
+      },
+      {
+        "player_id": "A9019",
+        "num": 24,
+        "name": "Assetou BELKACEM",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "DM",
+        "age": 26,
+        "rating": 72,
+        "wage": 1.04,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "DM": 100
+        }
+      },
+      {
+        "player_id": "A9210",
+        "num": 25,
+        "name": "Yann SIPA",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "GK",
+        "age": 25,
+        "rating": 63,
+        "wage": 1.1,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "GK": 100
+        }
+      },
+      {
+        "player_id": "A9523",
+        "num": 26,
+        "name": "Lilian ROMAIN",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "MID",
+        "age": 21,
+        "rating": 68,
+        "wage": 0.77,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "MID": 100
+        }
+      },
+      {
+        "player_id": "A9529",
+        "num": 27,
+        "name": "Radisa LITVINCHUK",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "LW",
+        "age": 21,
+        "rating": 63,
+        "wage": 0.88,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "LW": 100
+        }
+      },
+      {
+        "player_id": "A9329",
+        "num": 28,
+        "name": "Mitchell COLVIN",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "AM",
+        "age": 23,
+        "rating": 70,
+        "wage": 0.97,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "AM": 100
+        }
+      },
+      {
+        "player_id": "A9516",
+        "num": 29,
+        "name": "Ceslav RABINOFF",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RB",
+        "age": 21,
+        "rating": 69,
+        "wage": 0.63,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RB": 100
+        }
+      },
+      {
+        "player_id": "A9501",
+        "num": 30,
+        "name": "Niko KRAJKOWSKI",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "RB",
+        "age": 22,
+        "rating": 70,
+        "wage": 0.87,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "RB": 100
+        }
+      },
+      {
+        "player_id": "A9511",
+        "num": 31,
+        "name": "Cali SCHOBERT",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "GK",
+        "age": 22,
+        "rating": 76,
+        "wage": 0.81,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "GK": 100
+        }
+      },
+      {
+        "player_id": "A9623",
+        "num": 32,
+        "name": "Boris NOWY",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "CB",
+        "age": 20,
+        "rating": 69,
+        "wage": 0.64,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CB": 100
+        }
+      },
+      {
+        "player_id": "A9803",
+        "num": 33,
+        "name": "Ziemowit BALABANOV",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "LB",
+        "age": 19,
+        "rating": 66,
+        "wage": 0.59,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "LB": 100
+        }
+      },
+      {
+        "player_id": "A8603",
+        "num": 36,
+        "name": "Darifa KANOUTE",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "DM",
+        "age": 31,
+        "rating": 63,
+        "wage": 1.1,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "DM": 100
+        }
+      },
+      {
+        "player_id": "A9806",
+        "num": 36,
+        "name": "Braslav WIESIOLY",
+        "nat": "AKC",
+        "gender": "M",
+        "primaryPos": "LM",
+        "age": 19,
+        "rating": 69,
+        "wage": 0.67,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "LM": 100
+        }
+      },
+      {
+        "player_id": "A9712",
+        "num": 38,
+        "name": "Darifa BENCHABLA",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "AM",
+        "age": 19,
+        "rating": 60,
+        "wage": 0.68,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "AM": 100
+        }
+      },
+      {
+        "player_id": "A8609",
+        "num": 40,
+        "name": "Lisa TILLER",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "CB",
+        "age": 31,
+        "rating": 69,
+        "wage": 1.33,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "CB": 100
+        }
+      },
+      {
+        "player_id": "A8705",
+        "num": 88,
+        "name": "Dragoslava SHOLOKHOVA",
+        "nat": "AKC",
+        "gender": "F",
+        "primaryPos": "MID",
+        "age": 30,
+        "rating": 72,
+        "wage": 1.03,
+        "isStarter": false,
+        "squadStatus": "First XI",
+        "archetype": "Balanced",
+        "positions": {
+          "MID": 100
+        }
+      }
+    ],
     "fixtures": []
   }
 }
