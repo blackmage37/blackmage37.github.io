@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>League Dashboard - Admin Panel</title>
+  <title>Club Hub - Admin Panel</title>
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -129,7 +129,7 @@
       border: 1px solid var(--border-line);
       border-radius: 8px;
       padding: 24px;
-      max-width: 480px;
+      max-width: 650px;
       width: 90%;
     }
   </style>
@@ -139,7 +139,7 @@
     <!-- Header -->
     <div class="flex-between" style="margin-bottom: 24px;">
       <div>
-        <h1>League Dashboard - Admin Control</h1>
+        <h1>League Hub - Admin Control</h1>
         <p>Edit clubs, rosters, and fixtures, then commit directly to GitHub.</p>
       </div>
       <div id="sync-status" class="status-badge" style="display: none;"></div>
@@ -273,7 +273,10 @@
       <div id="tab-squad" class="panel" style="display: none;">
         <div class="flex-between">
           <h2>Squad Roster</h2>
-          <button class="btn btn-primary" onclick="addNewPlayer()">+ Add Player</button>
+          <div class="flex-row">
+            <button class="btn btn-secondary" onclick="openImportModal()">📥 Import CSV / Paste</button>
+            <button class="btn btn-primary" onclick="addNewPlayer()">+ Add Player</button>
+          </div>
         </div>
         <div class="table-wrapper">
           <table id="roster-table">
@@ -321,9 +324,9 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD NEW CLUB -->
+  <!-- MODAL 1: ADD NEW CLUB -->
   <div id="new-club-modal" class="modal-overlay">
-    <div class="modal">
+    <div class="modal" style="max-width: 480px;">
       <h2>Add New Club</h2>
       <p>Enter the slug and display details to scaffold a new club.</p>
       <div class="form-group" style="margin-bottom: 12px;">
@@ -341,6 +344,31 @@
       <div class="flex-between">
         <button class="btn btn-secondary" onclick="closeNewClubModal()">Cancel</button>
         <button class="btn btn-success" onclick="createClub()">Create Club</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: BULK IMPORT PLAYERS (CSV) -->
+  <div id="import-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Bulk Import Players</h2>
+      <p>Paste comma-separated rows. Expected format:</p>
+      <code style="display:block; background:#0f172a; padding:8px 12px; border-radius:4px; font-size:0.75rem; margin-bottom:12px; color:var(--text-muted); line-height:1.5;">
+        # num, id, name, nat, gender, pos, age, rating, wage, [positions optional]<br>
+        1, A0001, Gole KEEPER, AKC, M, GK, 34, 76, 1.2<br>
+        2, A0002, Leif TBACK, AKC, M, LB, 23, 74, 0.8, LB:100;CB:75
+      </code>
+
+      <textarea id="csv-import-text" rows="8" style="width:100%; font-family:monospace; margin-bottom:12px;" placeholder="Paste CSV rows here..."></textarea>
+
+      <div class="flex-between">
+        <label style="font-size:0.8rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="csv-replace-toggle"> Replace entire squad
+        </label>
+        <div class="flex-row">
+          <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+          <button class="btn btn-success" onclick="runImport()">Process Import</button>
+        </div>
       </div>
     </div>
   </div>
@@ -380,7 +408,7 @@
     async function connectAndLoad() {
       const owner = document.getElementById("repo-owner").value.trim();
       const repo = document.getElementById("repo-name").value.trim();
-      const path = document.getElementById("repo-path").value.trim();
+      const path = document.getElementById("repo-path").value.trim().replace(/^\/+/, '');
       const pat = document.getElementById("repo-pat").value.trim();
 
       if (!owner || !repo || !pat) {
@@ -544,7 +572,7 @@
       switchTeam(slug);
     }
 
-    // 6. ROSTER
+    // 6. ROSTER SPREADSHEET
     function renderRoster() {
       const squad = databaseObject[activeTeamKey].squad || [];
       const tbody = document.getElementById("roster-tbody");
@@ -615,7 +643,91 @@
       renderRoster();
     }
 
-    // 7. FIXTURES
+    // 7. CSV BULK IMPORT MODAL LOGIC
+    function openImportModal() {
+      document.getElementById("csv-import-text").value = "";
+      document.getElementById("csv-replace-toggle").checked = false;
+      document.getElementById("import-modal").style.display = "flex";
+    }
+
+    function closeImportModal() {
+      document.getElementById("import-modal").style.display = "none";
+    }
+
+    function runImport() {
+      const csvText = document.getElementById("csv-import-text").value;
+      const replace = document.getElementById("csv-replace-toggle").checked;
+      importPlayersFromCSV(csvText, replace);
+      closeImportModal();
+    }
+
+    function importPlayersFromCSV(csvText, replaceSquad = false) {
+      if (!csvText || !csvText.trim()) return;
+
+      const lines = csvText.trim().split(/\r?\n/);
+      const parsedPlayers = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith("#")) continue;
+
+        const parts = line.split(",").map(p => p.trim());
+        if (parts.length < 9) {
+          console.warn(`Line ${i + 1} skipped (expected at least 9 columns):`, line);
+          continue;
+        }
+
+        const [num, player_id, name, nat, gender, primaryPos, age, rating, wage, posRatingsRaw] = parts;
+
+        // Parse secondary position ratings if provided (format: "LB:100;CB:75"),
+        // otherwise default to 100 at their primary position
+        const positionsObj = {};
+        if (posRatingsRaw) {
+          posRatingsRaw.split(";").forEach(pair => {
+            const [pos, val] = pair.split(":");
+            if (pos && val) positionsObj[pos.trim().toUpperCase()] = parseInt(val.trim(), 10) || 100;
+          });
+        } else if (primaryPos) {
+          positionsObj[primaryPos.toUpperCase()] = 100;
+        }
+
+        parsedPlayers.push({
+          player_id: player_id,
+          num: parseInt(num, 10) || 0,
+          name: name,
+          nat: nat.toUpperCase(),
+          gender: gender.toUpperCase(),
+          primaryPos: primaryPos.toUpperCase(),
+          age: parseInt(age, 10) || 20,
+          rating: parseInt(rating, 10) || 50,
+          wage: parseFloat(wage) || 0.1,
+          isStarter: false,
+          squadStatus: "First XI",
+          archetype: "Balanced",
+          positions: positionsObj
+        });
+      }
+
+      if (parsedPlayers.length === 0) {
+        alert("No valid player rows found. Check your CSV format.");
+        return;
+      }
+
+      if (!databaseObject[activeTeamKey].squad) {
+        databaseObject[activeTeamKey].squad = [];
+      }
+
+      if (replaceSquad) {
+        databaseObject[activeTeamKey].squad = parsedPlayers;
+      } else {
+        databaseObject[activeTeamKey].squad.push(...parsedPlayers);
+      }
+
+      renderRoster();
+      alert(`Successfully imported ${parsedPlayers.length} player(s)!`);
+    }
+
+    // 8. FIXTURES
     function renderFixtures() {
       const fixtures = databaseObject[activeTeamKey].fixtures || [];
       const tbody = document.getElementById("fixtures-tbody");
@@ -657,7 +769,7 @@
       renderFixtures();
     }
 
-    // 8. COMMIT TO GITHUB
+    // 9. COMMIT TO GITHUB
     async function saveAndCommit() {
       const owner = sessionStorage.getItem("gh_owner");
       const repo = sessionStorage.getItem("gh_name");
