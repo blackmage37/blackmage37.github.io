@@ -251,8 +251,14 @@ function renderSquadTable(squad = []) {
 
   document.querySelectorAll('.pos-cell').forEach(cell => {
     cell.addEventListener('mouseenter', () => {
-      const rect = cell.getBoundingClientRect();
-      if (rect.top < 250) {
+      const cellRect = cell.getBoundingClientRect();
+      const wrapper = cell.closest('.table-wrapper');
+      const wrapperRect = wrapper ? wrapper.getBoundingClientRect() : null;
+
+      const isNearTableTop = wrapperRect ? (cellRect.top - wrapperRect.top < 220) : false;
+      const isNearViewportTop = cellRect.top < 260;
+
+      if (isNearTableTop || isNearViewportTop) {
         cell.classList.add('tooltip-below');
       } else {
         cell.classList.remove('tooltip-below');
