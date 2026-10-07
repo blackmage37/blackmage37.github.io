@@ -773,7 +773,7 @@
     async function saveAndCommit() {
       const owner = sessionStorage.getItem("gh_owner");
       const repo = sessionStorage.getItem("gh_name");
-      const path = sessionStorage.getItem("gh_path");
+      const path = (sessionStorage.getItem("gh_path") || "").replace(/^\/+/, '');
       const pat = sessionStorage.getItem("gh_pat");
       const msg = document.getElementById("commit-msg").value.trim() || "Update league data";
 
