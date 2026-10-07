@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Club Hub - Admin Panel</title>
+  <title>League Dashboard - Admin Panel</title>
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -17,16 +17,27 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: var(--bg-dark); color: var(--text-main); padding: 24px; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 24px; padding-bottom: 80px; }
     .container { max-width: 1200px; margin: 0 auto; }
     
     .panel { background: var(--card-bg); border: 1px solid var(--border-line); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
-    h1 { font-size: 1.5rem; margin-bottom: 8px; }
-    h2 { font-size: 1.2rem; margin-bottom: 16px; color: var(--text-main); }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    h2 { font-size: 1.15rem; margin-bottom: 16px; color: var(--text-main); }
+    h3 { font-size: 0.95rem; text-transform: uppercase; color: var(--primary); margin: 16px 0 8px; }
     p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
 
     .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+    /* Form Inputs */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
 
     input, select, textarea {
       background: #0f172a;
@@ -36,7 +47,21 @@
       border-radius: 6px;
       font-size: 0.85rem;
     }
-    input:focus, select:focus { outline: 1px solid var(--primary); }
+    input:focus, select:focus, textarea:focus { outline: 1px solid var(--primary); }
+
+    .color-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    input[type="color"] {
+      padding: 0;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
 
     .btn {
       padding: 8px 16px;
@@ -45,26 +70,68 @@
       font-size: 0.85rem;
       cursor: pointer;
       border: none;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.2s ease, filter 0.2s ease;
     }
-    .btn:hover { opacity: 0.9; }
+    .btn:hover { opacity: 0.9; filter: brightness(1.1); }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--accent); color: #000; }
     .btn-danger { background: var(--accent-danger); color: #fff; }
+    .btn-secondary { background: #475569; color: #fff; }
 
-    /* Roster Table */
-    .table-wrapper { overflow-x: auto; margin-top: 16px; border: 1px solid var(--border-line); border-radius: 6px; }
+    /* Tab Navigation */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-line);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 8px 16px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Tables */
+    .table-wrapper { overflow-x: auto; margin-top: 12px; border: 1px solid var(--border-line); border-radius: 6px; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
     th { background: #0b1120; padding: 10px; border-bottom: 1px solid var(--border-line); color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; }
     td { padding: 8px 10px; border-bottom: 1px solid var(--border-line); }
     tr:last-child td { border-bottom: none; }
     
-    .input-sm { width: 60px; }
+    .input-sm { width: 65px; }
     .input-md { width: 140px; }
-    .status-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; display: inline-block; font-weight: 600; }
     .status-syncing { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     .status-ok { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
     .status-err { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Modal Backdrop */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border-line);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+    }
   </style>
 </head>
 <body>
@@ -72,8 +139,8 @@
     <!-- Header -->
     <div class="flex-between" style="margin-bottom: 24px;">
       <div>
-        <h1>Club Dashboard Admin</h1>
-        <p>Edit squad records and commit directly to GitHub.</p>
+        <h1>League Dashboard - Admin Control</h1>
+        <p>Edit clubs, rosters, and fixtures, then commit directly to GitHub.</p>
       </div>
       <div id="sync-status" class="status-badge" style="display: none;"></div>
     </div>
@@ -82,11 +149,11 @@
     <div class="panel" id="auth-panel">
       <h2>GitHub Repository Authentication</h2>
       <div class="flex-row">
-        <input type="text" id="repo-owner" placeholder="Owner / Username (e.g. johndoe)" class="input-md">
-        <input type="text" id="repo-name" placeholder="Repo Name (e.g. club-hub)" class="input-md">
-        <input type="text" id="repo-path" placeholder="Path (e.g. data.json)" value="data.json" class="input-md">
+        <input type="text" id="repo-owner" placeholder="Owner (e.g. johndoe)" class="input-md">
+        <input type="text" id="repo-name" placeholder="Repo (e.g. club-hub)" class="input-md">
+        <input type="text" id="repo-path" placeholder="Path (e.g. league.json)" value="league.json" class="input-md">
         <input type="password" id="repo-pat" placeholder="Personal Access Token (ghp_...)" style="flex-grow: 1;">
-        <button class="btn btn-primary" onclick="connectAndLoad()">Load Data</button>
+        <button class="btn btn-primary" onclick="connectAndLoad()">Load League Data</button>
       </div>
     </div>
 
@@ -95,19 +162,119 @@
       <!-- Controls Bar -->
       <div class="panel flex-between">
         <div class="flex-row">
-          <label style="font-size: 0.85rem; font-weight: 600;">Active Club:</label>
+          <label style="font-size: 0.85rem; font-weight: 700;">Club:</label>
           <select id="team-selector" onchange="switchTeam(this.value)"></select>
-          <button class="btn btn-primary" onclick="addNewPlayer()">+ Add Player</button>
+          <button class="btn btn-primary" onclick="openNewClubModal()">+ New Club</button>
         </div>
         <div class="flex-row">
-          <input type="text" id="commit-msg" placeholder="Commit message..." value="Update squad roster via Admin" style="width: 250px;">
+          <input type="text" id="commit-msg" placeholder="Commit message..." value="Update league data via Admin" style="width: 250px;">
           <button class="btn btn-success" onclick="saveAndCommit()">Commit to GitHub</button>
         </div>
       </div>
 
-      <!-- Squad Editor Table -->
-      <div class="panel">
-        <h2>Squad Roster</h2>
+      <!-- Tab Navigation -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="setTab('info')">Club Details</button>
+        <button class="tab-btn" onclick="setTab('squad')">Squad Roster</button>
+        <button class="tab-btn" onclick="setTab('fixtures')">Fixtures</button>
+      </div>
+
+      <!-- TAB 1: CLUB INFO & BRANDING -->
+      <div id="tab-info" class="panel">
+        <h2>Club Profile & Settings</h2>
+        
+        <h3>Core Identity</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Club Name</label>
+            <input type="text" id="club-name" onchange="updateMeta('name', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Nickname</label>
+            <input type="text" id="club-nickname" onchange="updateMeta('nickname', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Motto</label>
+            <input type="text" id="club-motto" onchange="updateMeta('motto', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Crest Image URL</label>
+            <input type="text" id="club-crest" onchange="updateMeta('crest', this.value)">
+          </div>
+        </div>
+
+        <h3>Colors & Theme</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Primary</label>
+            <div class="color-input-wrap">
+              <input type="color" id="club-color-pri-pick" onchange="syncColorInput('primary', this.value)">
+              <input type="text" id="club-color-pri-text" onchange="syncColorPicker('primary', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Secondary</label>
+            <div class="color-input-wrap">
+              <input type="color" id="club-color-sec-pick" onchange="syncColorInput('secondary', this.value)">
+              <input type="text" id="club-color-sec-text" onchange="syncColorPicker('secondary', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Accent</label>
+            <div class="color-input-wrap">
+              <input type="color" id="club-color-acc-pick" onchange="syncColorInput('accent', this.value)">
+              <input type="text" id="club-color-acc-text" onchange="syncColorPicker('accent', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <h3>Stadium</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Stadium Name</label>
+            <input type="text" id="stadium-name" onchange="updateNestedMeta('stadium', 'name', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Capacity</label>
+            <input type="number" id="stadium-capacity" onchange="updateNestedMeta('stadium', 'capacity', parseInt(this.value, 10))">
+          </div>
+          <div class="form-group">
+            <label>Locale</label>
+            <input type="text" id="stadium-locale" onchange="updateNestedMeta('stadium', 'locale', this.value)">
+          </div>
+          <div class="form-group">
+            <label>District</label>
+            <input type="text" id="stadium-district" onchange="updateNestedMeta('stadium', 'district', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Photo URL</label>
+            <input type="text" id="stadium-photo" onchange="updateNestedMeta('stadium', 'photo', this.value)">
+          </div>
+        </div>
+
+        <h3>Sponsor</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Sponsor Name</label>
+            <input type="text" id="sponsor-name" onchange="updateNestedMeta('sponsor', 'name', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Sector</label>
+            <input type="text" id="sponsor-sector" onchange="updateNestedMeta('sponsor', 'sector', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Logo URL</label>
+            <input type="text" id="sponsor-logo" onchange="updateNestedMeta('sponsor', 'logo', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SQUAD ROSTER -->
+      <div id="tab-squad" class="panel" style="display: none;">
+        <div class="flex-between">
+          <h2>Squad Roster</h2>
+          <button class="btn btn-primary" onclick="addNewPlayer()">+ Add Player</button>
+        </div>
         <div class="table-wrapper">
           <table id="roster-table">
             <thead>
@@ -117,7 +284,7 @@
                 <th>Name</th>
                 <th>Nat</th>
                 <th>Gender</th>
-                <th>Base Pos</th>
+                <th>Pos</th>
                 <th>Age</th>
                 <th>OVR</th>
                 <th>Wage (£M)</th>
@@ -129,6 +296,52 @@
           </table>
         </div>
       </div>
+
+      <!-- TAB 3: FIXTURES -->
+      <div id="tab-fixtures" class="panel" style="display: none;">
+        <div class="flex-between">
+          <h2>Scheduled Fixtures</h2>
+          <button class="btn btn-primary" onclick="addNewFixture()">+ Add Fixture</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Opponent</th>
+                <th>Venue</th>
+                <th>Competition</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="fixtures-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD NEW CLUB -->
+  <div id="new-club-modal" class="modal-overlay">
+    <div class="modal">
+      <h2>Add New Club</h2>
+      <p>Enter the slug and display details to scaffold a new club.</p>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Club Slug (Key, e.g. "cascades-fc")</label>
+        <input type="text" id="new-club-slug" placeholder="cascades-fc">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Club Name</label>
+        <input type="text" id="new-club-name" placeholder="Cascades FC">
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Motto</label>
+        <input type="text" id="new-club-motto" placeholder="Flow with Power">
+      </div>
+      <div class="flex-between">
+        <button class="btn btn-secondary" onclick="closeNewClubModal()">Cancel</button>
+        <button class="btn btn-success" onclick="createClub()">Create Club</button>
+      </div>
     </div>
   </div>
 
@@ -137,12 +350,11 @@
     let databaseObject = null;
     let activeTeamKey = null;
 
-    // Load credentials from sessionStorage if already saved
     window.addEventListener("DOMContentLoaded", () => {
       if (sessionStorage.getItem("gh_pat")) {
         document.getElementById("repo-owner").value = sessionStorage.getItem("gh_owner") || "";
         document.getElementById("repo-name").value = sessionStorage.getItem("gh_name") || "";
-        document.getElementById("repo-path").value = sessionStorage.getItem("gh_path") || "data.json";
+        document.getElementById("repo-path").value = sessionStorage.getItem("gh_path") || "league.json";
         document.getElementById("repo-pat").value = sessionStorage.getItem("gh_pat") || "";
       }
     });
@@ -154,7 +366,17 @@
       el.textContent = msg;
     }
 
-    // 1. GITHUB API: FETCH FILE CONTENT AND SHA
+    // TAB CONTROLLER
+    function setTab(tabName) {
+      ['info', 'squad', 'fixtures'].forEach(t => {
+        document.getElementById(`tab-${t}`).style.display = (t === tabName) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', ['info', 'squad', 'fixtures'][idx] === tabName);
+      });
+    }
+
+    // 1. GITHUB FETCH
     async function connectAndLoad() {
       const owner = document.getElementById("repo-owner").value.trim();
       const repo = document.getElementById("repo-name").value.trim();
@@ -166,7 +388,6 @@
         return;
       }
 
-      // Persist in session
       sessionStorage.setItem("gh_owner", owner);
       sessionStorage.setItem("gh_name", repo);
       sessionStorage.setItem("gh_path", path);
@@ -183,28 +404,13 @@
           }
         });
 
-        if (!res.ok) {
-          throw new Error(`GitHub responded with ${res.status}: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error(`GitHub responded with ${res.status}: ${res.statusText}`);
 
         const data = await res.json();
         rawFileSha = data.sha;
 
-        // Decode UTF-8 Base64 content
-        const decodedString = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-        
-        // Handle either pure JSON or a JS file like 'const leagueDatabase = {...}'
-        if (decodedString.trim().startsWith("{") || decodedString.trim().startsWith("[")) {
-          databaseObject = JSON.parse(decodedString);
-        } else {
-          // Extracts JSON payload from JS declarations
-          const jsonMatch = decodedString.match(/=\s*(\{[\s\S]*\});?\s*$/);
-          if (jsonMatch && jsonMatch[1]) {
-            databaseObject = JSON.parse(jsonMatch[1]);
-          } else {
-            throw new Error("Could not parse JSON structure from target file.");
-          }
-        }
+        const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+        databaseObject = JSON.parse(decoded);
 
         setStatus("File loaded successfully", "ok");
         document.getElementById("workspace").style.display = "block";
@@ -215,34 +421,136 @@
       }
     }
 
-    // 2. UI WORKSPACE SETUP
+    // 2. WORKSPACE BINDINGS
     function initWorkspace() {
       const selector = document.getElementById("team-selector");
-      const teamKeys = Object.keys(databaseObject.leagueDatabase || databaseObject);
+      const teamKeys = Object.keys(databaseObject);
       
-      selector.innerHTML = teamKeys.map(k => `<option value="${k}">${k}</option>`).join("");
+      selector.innerHTML = teamKeys.map(k => `<option value="${k}">${databaseObject[k].name || k}</option>`).join("");
       activeTeamKey = teamKeys[0];
-      renderRoster();
+      loadTeamData();
     }
 
     function switchTeam(teamKey) {
       activeTeamKey = teamKey;
+      loadTeamData();
+    }
+
+    function loadTeamData() {
+      const team = databaseObject[activeTeamKey];
+      if (!team) return;
+
+      // Identity
+      document.getElementById("club-name").value = team.name || "";
+      document.getElementById("club-nickname").value = team.nickname || "";
+      document.getElementById("club-motto").value = team.motto || "";
+      document.getElementById("club-crest").value = team.crest || "";
+
+      // Colors
+      const colors = team.colors || { primary: "#12853F", secondary: "#000000", accent: "#E31B23" };
+      syncColor("primary", colors.primary);
+      syncColor("secondary", colors.secondary);
+      syncColor("accent", colors.accent);
+
+      // Stadium
+      const stadium = team.stadium || {};
+      document.getElementById("stadium-name").value = stadium.name || "";
+      document.getElementById("stadium-capacity").value = stadium.capacity || 0;
+      document.getElementById("stadium-locale").value = stadium.locale || "";
+      document.getElementById("stadium-district").value = stadium.district || "";
+      document.getElementById("stadium-photo").value = stadium.photo || "";
+
+      // Sponsor
+      const sponsor = team.sponsor || {};
+      document.getElementById("sponsor-name").value = sponsor.name || "";
+      document.getElementById("sponsor-sector").value = sponsor.sector || "";
+      document.getElementById("sponsor-logo").value = sponsor.logo || "";
+
+      // Roster & Fixtures
       renderRoster();
+      renderFixtures();
     }
 
-    function getActiveSquad() {
-      if (databaseObject.leagueDatabase) {
-        return databaseObject.leagueDatabase[activeTeamKey].squad;
+    // 3. COLOR INPUT SYNC
+    function syncColor(type, hex) {
+      const p = type.substring(0, 3);
+      document.getElementById(`club-color-${p}-pick`).value = hex;
+      document.getElementById(`club-color-${p}-text`).value = hex;
+    }
+    function syncColorInput(type, hex) {
+      const p = type.substring(0, 3);
+      document.getElementById(`club-color-${p}-text`).value = hex;
+      updateNestedMeta("colors", type, hex);
+    }
+    function syncColorPicker(type, hex) {
+      const p = type.substring(0, 3);
+      if (/^#[0-9A-F]{6}$/i.test(hex)) {
+        document.getElementById(`club-color-${p}-pick`).value = hex;
+        updateNestedMeta("colors", type, hex);
       }
-      return databaseObject[activeTeamKey].squad;
     }
 
+    // 4. META UPDATES
+    function updateMeta(field, value) {
+      databaseObject[activeTeamKey][field] = value;
+    }
+    function updateNestedMeta(parent, child, value) {
+      if (!databaseObject[activeTeamKey][parent]) {
+        databaseObject[activeTeamKey][parent] = {};
+      }
+      databaseObject[activeTeamKey][parent][child] = value;
+    }
+
+    // 5. NEW CLUB CREATION
+    function openNewClubModal() {
+      document.getElementById("new-club-modal").style.display = "flex";
+    }
+    function closeNewClubModal() {
+      document.getElementById("new-club-modal").style.display = "none";
+    }
+    function createClub() {
+      const slug = document.getElementById("new-club-slug").value.trim().toLowerCase().replace(/\s+/g, '-');
+      const name = document.getElementById("new-club-name").value.trim();
+      const motto = document.getElementById("new-club-motto").value.trim();
+
+      if (!slug || !name) {
+        alert("Please provide both a club slug and a club name.");
+        return;
+      }
+      if (databaseObject[slug]) {
+        alert("A club with this slug already exists.");
+        return;
+      }
+
+      databaseObject[slug] = {
+        name: name,
+        nickname: name,
+        motto: motto || "United for Glory",
+        crest: "https://placehold.co/300/101010/ffffff?text=" + slug.substring(0, 3).toUpperCase(),
+        stadium: { name: "Main Stadium", capacity: 10000, locale: "", district: "", photo: "" },
+        sponsor: { name: "Club Sponsor", sector: "General", logo: "" },
+        colors: { primary: "#101010", secondary: "#373737", accent: "#c00000" },
+        stats: { rank: Object.keys(databaseObject).length + 1 },
+        honours: {},
+        starting_xi: {},
+        staff: { senior: { manager: { name: "TBD", nat: "AKC" } } },
+        squad: [],
+        fixtures: []
+      };
+
+      closeNewClubModal();
+      initWorkspace();
+      document.getElementById("team-selector").value = slug;
+      switchTeam(slug);
+    }
+
+    // 6. ROSTER
     function renderRoster() {
-      const squad = getActiveSquad();
+      const squad = databaseObject[activeTeamKey].squad || [];
       const tbody = document.getElementById("roster-tbody");
 
       tbody.innerHTML = squad.map((p, idx) => `
-        <tr data-index="${idx}">
+        <tr>
           <td><input type="number" class="input-sm" value="${p.num || 0}" onchange="updatePlayerField(${idx}, 'num', parseInt(this.value, 10))"></td>
           <td><input type="text" class="input-sm" value="${p.player_id}" onchange="updatePlayerField(${idx}, 'player_id', this.value)"></td>
           <td><input type="text" class="input-md" value="${p.name}" onchange="updatePlayerField(${idx}, 'name', this.value)"></td>
@@ -259,7 +567,7 @@
           <td><input type="number" class="input-sm" value="${p.rating || 0}" onchange="updatePlayerField(${idx}, 'rating', parseInt(this.value, 10))"></td>
           <td><input type="number" step="0.01" class="input-sm" value="${p.wage || 0}" onchange="updatePlayerField(${idx}, 'wage', parseFloat(this.value))"></td>
           <td>
-            <input type="text" style="width: 200px; font-family: monospace;" 
+            <input type="text" style="width: 190px; font-family: monospace;" 
                    value='${JSON.stringify(p.positions || {})}' 
                    onchange="updatePositionsField(${idx}, this.value, this)">
           </td>
@@ -268,17 +576,14 @@
       `).join("");
     }
 
-    // 3. REACTIVE SQUAD MUTATIONS
     function updatePlayerField(index, field, value) {
-      const squad = getActiveSquad();
-      squad[index][field] = value;
+      databaseObject[activeTeamKey].squad[index][field] = value;
     }
 
     function updatePositionsField(index, jsonString, inputEl) {
       try {
         const parsed = JSON.parse(jsonString);
-        const squad = getActiveSquad();
-        squad[index].positions = parsed;
+        databaseObject[activeTeamKey].squad[index].positions = parsed;
         inputEl.style.borderColor = "var(--border-line)";
       } catch (err) {
         inputEl.style.borderColor = "var(--accent-danger)";
@@ -287,7 +592,8 @@
     }
 
     function addNewPlayer() {
-      const squad = getActiveSquad();
+      if (!databaseObject[activeTeamKey].squad) databaseObject[activeTeamKey].squad = [];
+      const squad = databaseObject[activeTeamKey].squad;
       squad.push({
         player_id: "A" + Math.floor(1000 + Math.random() * 9000),
         num: squad.length + 1,
@@ -295,8 +601,8 @@
         nat: "AKC",
         gender: "M",
         primaryPos: "MC",
-        age: 21,
-        rating: 65,
+        age: 22,
+        rating: 68,
         wage: 0.50,
         positions: { "MC": 100 }
       });
@@ -304,26 +610,65 @@
     }
 
     function removePlayer(index) {
-      if (!confirm("Are you sure you want to remove this player?")) return;
-      const squad = getActiveSquad();
-      squad.splice(index, 1);
+      if (!confirm("Remove this player?")) return;
+      databaseObject[activeTeamKey].squad.splice(index, 1);
       renderRoster();
     }
 
-    // 4. GITHUB API: COMMIT MUTATIONS VIA PUT
+    // 7. FIXTURES
+    function renderFixtures() {
+      const fixtures = databaseObject[activeTeamKey].fixtures || [];
+      const tbody = document.getElementById("fixtures-tbody");
+
+      tbody.innerHTML = fixtures.map((f, idx) => `
+        <tr>
+          <td><input type="date" value="${f.date}" onchange="updateFixtureField(${idx}, 'date', this.value)"></td>
+          <td><input type="text" value="${f.opponent}" class="input-md" onchange="updateFixtureField(${idx}, 'opponent', this.value)"></td>
+          <td>
+            <select onchange="updateFixtureField(${idx}, 'venue', this.value)">
+              <option value="Home" ${f.venue === 'Home' ? 'selected' : ''}>Home</option>
+              <option value="Away" ${f.venue === 'Away' ? 'selected' : ''}>Away</option>
+              <option value="Neutral" ${f.venue === 'Neutral' ? 'selected' : ''}>Neutral</option>
+            </select>
+          </td>
+          <td><input type="text" value="${f.competition}" class="input-sm" onchange="updateFixtureField(${idx}, 'competition', this.value)"></td>
+          <td><button class="btn btn-danger" style="padding: 4px 8px;" onclick="removeFixture(${idx})">×</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function updateFixtureField(index, field, value) {
+      databaseObject[activeTeamKey].fixtures[index][field] = value;
+    }
+
+    function addNewFixture() {
+      if (!databaseObject[activeTeamKey].fixtures) databaseObject[activeTeamKey].fixtures = [];
+      databaseObject[activeTeamKey].fixtures.push({
+        opponent: "TBD Opponent",
+        venue: "Home",
+        date: new Date().toISOString().split('T')[0],
+        competition: "LAK"
+      });
+      renderFixtures();
+    }
+
+    function removeFixture(index) {
+      databaseObject[activeTeamKey].fixtures.splice(index, 1);
+      renderFixtures();
+    }
+
+    // 8. COMMIT TO GITHUB
     async function saveAndCommit() {
       const owner = sessionStorage.getItem("gh_owner");
       const repo = sessionStorage.getItem("gh_name");
       const path = sessionStorage.getItem("gh_path");
       const pat = sessionStorage.getItem("gh_pat");
-      const msg = document.getElementById("commit-msg").value.trim() || "Update squad data";
+      const msg = document.getElementById("commit-msg").value.trim() || "Update league data";
 
       setStatus("Committing changes to GitHub...", "syncing");
 
       try {
-        // Serialize updated document with neat formatting
         const serialized = JSON.stringify(databaseObject, null, 2);
-        // Base64 encode for UTF-8
         const encodedContent = btoa(unescape(encodeURIComponent(serialized)));
 
         const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
@@ -347,7 +692,6 @@
         }
 
         const resData = await res.json();
-        // Update to the new commit's SHA so subsequent saves succeed
         rawFileSha = resData.content.sha;
         setStatus("Changes committed successfully!", "ok");
       } catch (err) {
