@@ -374,6 +374,7 @@ h2 {
 /* Tables */
 .table-wrapper {
   overflow-x: auto;
+  overflow-y: visible;
   border: 1px solid var(--border-line);
   border-radius: 8px;
 }
@@ -697,6 +698,10 @@ tbody tr:hover {
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
+.pos-cell:hover {
+  z-index: 50;
+}
+
 .pos-cell:hover .pos-badge-trigger {
   background: rgba(255, 255, 255, 0.2);
   border-color: #ffffff66;
@@ -705,17 +710,17 @@ tbody tr:hover {
 .pos-tooltip {
   display: none;
   position: absolute;
-  bottom: 125%;
+  bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
   pointer-events: none;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.7));
 }
 
 .pos-cell.tooltip-below .pos-tooltip {
   bottom: auto;
-  top: 125%;
+  top: calc(100% + 8px);
 }
 
 .pos-cell:hover .pos-tooltip {
@@ -723,8 +728,17 @@ tbody tr:hover {
   animation: fadeIn 0.2s ease-in-out;
 }
 
+.pos-cell.tooltip-below:hover .pos-tooltip {
+  animation: fadeInBelow 0.2s ease-in-out;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes fadeInBelow {
+  from { opacity: 0; transform: translate(-50%, -6px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
