@@ -1,3 +1,9 @@
+// data.js
+import leagueData from './league.json' with { type: 'json' };
+
+// Also expose globally so existing non-module code can still access it seamlessly
+window.leagueDatabase = leagueData;
+
 // Nationalities Lookup Database
 const nationalitiesDatabase = {
   "AKC": { name: "Akach", flag: "https://nssportwiki.com/images/3/3d/AkachFlag.svg" },
@@ -97,5 +103,3 @@ const competitions = {
 	textColor: "#ffffff"
   }
 };
-
-const leagueDatabase = require('./league.json');
