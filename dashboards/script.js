@@ -17,12 +17,12 @@ function getReadableTextColor(bgColor, preferredTextColor) {
   if (!preferredTextColor) return getContrastingTextColor(bgColor);
 
   const getBrightness = (hexColor) => {
-	let hex = hexColor.replace('#', '');
-	if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
-	return (r * 299 + g * 587 + b * 114) / 1000;
+    let hex = hexColor.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
   };
 
   const bgBrightness = getBrightness(bgColor);
@@ -30,7 +30,7 @@ function getReadableTextColor(bgColor, preferredTextColor) {
   const diff = Math.abs(bgBrightness - textBrightness);
 
   if (diff < 100) {
-	return bgBrightness > 128 ? '#0f172a' : '#ffffff';
+    return bgBrightness > 128 ? '#0f172a' : '#ffffff';
   }
   return preferredTextColor;
 }
@@ -41,31 +41,32 @@ function renderGenderBadge(genderCode) {
   let symbol = '', label = '', cssClass = '';
 
   switch (code) {
-	case 'M': symbol = '♂'; label = 'Male'; cssClass = 'gender-m'; break;
-	case 'F': symbol = '♀'; label = 'Female'; cssClass = 'gender-f'; break;
-	case 'X': symbol = '⚲'; label = 'Non-Binary / Other'; cssClass = 'gender-x'; break;
-	default: return '';
+    case 'M': symbol = '♂'; label = 'Male'; cssClass = 'gender-m'; break;
+    case 'F': symbol = '♀'; label = 'Female'; cssClass = 'gender-f'; break;
+    case 'X': symbol = '⚲'; label = 'Non-Binary / Other'; cssClass = 'gender-x'; break;
+    default: return '';
   }
   return `<span class="gender-badge ${cssClass}" title="${label}">${symbol}</span>`;
 }
 
 function renderFlagBadge(natCode, nat2Code) {
   if (!natCode) return '-';
+  const nationalities = window.nationalitiesDatabase || {};
 
   const getFlagHTML = (code) => {
-	if (!code) return '';
-	const natData = nationalitiesDatabase[code.toUpperCase()];
-	if (natData && natData.flag) {
-	  return `<img src="${natData.flag}" alt="${natData.name}" title="${natData.name} (${code.toUpperCase()})" class="nat-flag-img">`;
-	}
-	return `<span>${code.toUpperCase()}</span>`;
+    if (!code) return '';
+    const natData = nationalities[code.toUpperCase()];
+    if (natData && natData.flag) {
+      return `<img src="${natData.flag}" alt="${natData.name}" title="${natData.name} (${code.toUpperCase()})" class="nat-flag-img">`;
+    }
+    return `<span>${code.toUpperCase()}</span>`;
   };
 
   const primaryFlag = getFlagHTML(natCode);
   const secondaryFlag = getFlagHTML(nat2Code);
 
   if (secondaryFlag) {
-	return `<div class="flags-container">${primaryFlag}${secondaryFlag}</div>`;
+    return `<div class="flags-container">${primaryFlag}${secondaryFlag}</div>`;
   }
 
   return primaryFlag;
@@ -74,12 +75,13 @@ function renderFlagBadge(natCode, nat2Code) {
 function renderCompBadge(compCode) {
   if (!compCode) return '-';
   const code = compCode.toUpperCase();
+  const comps = window.competitions || {};
   
-  const compKey = Object.keys(competitions).find(key => competitions[key].code === code);
-  const comp = compKey ? competitions[compKey] : null;
+  const compKey = Object.keys(comps).find(key => comps[key].code === code);
+  const comp = compKey ? comps[compKey] : null;
 
   if (!comp) {
-	return `<span class="comp-badge" style="background: rgba(255,255,255,0.1); color: #fff;">${code}</span>`;
+    return `<span class="comp-badge" style="background: rgba(255,255,255,0.1); color: #fff;">${code}</span>`;
   }
 
   return `<span class="comp-badge" style="background: ${comp.color}; color: ${comp.textColor};" title="${comp.name}">${comp.code}</span>`;
@@ -91,20 +93,20 @@ function getProficiencyColor(rating) {
   let r, g, b;
 
   if (val >= 85) {
-	const factor = (val - 85) / 15;
-	r = Math.round(132 - (132 - 34) * factor);
-	g = Math.round(204 + (197 - 204) * factor);
-	b = Math.round(22 + (94 - 22) * factor);
+    const factor = (val - 85) / 15;
+    r = Math.round(132 - (132 - 34) * factor);
+    g = Math.round(204 + (197 - 204) * factor);
+    b = Math.round(22 + (94 - 22) * factor);
   } else if (val >= 65) {
-	const factor = (val - 65) / 19;
-	r = Math.round(234 - (234 - 132) * factor);
-	g = Math.round(179 + (204 - 179) * factor);
-	b = Math.round(8 + (22 - 8) * factor);
+    const factor = (val - 65) / 19;
+    r = Math.round(234 - (234 - 132) * factor);
+    g = Math.round(179 + (204 - 179) * factor);
+    b = Math.round(8 + (22 - 8) * factor);
   } else {
-	const factor = Math.max(0, (val - 45) / 20);
-	r = Math.round(249 + (234 - 249) * factor);
-	g = Math.round(115 + (179 - 115) * factor);
-	b = Math.round(22 - (22 - 8) * factor);
+    const factor = Math.max(0, (val - 45) / 20);
+    r = Math.round(249 + (234 - 249) * factor);
+    g = Math.round(115 + (179 - 115) * factor);
+    b = Math.round(22 - (22 - 8) * factor);
   }
   return `rgb(${r}, ${g}, ${b})`;
 }
@@ -112,20 +114,14 @@ function getProficiencyColor(rating) {
 function getPositionCoordinates(posKey) {
   if (!posKey) return null;
   const key = posKey.toUpperCase();
+  const aliases = window.positionAliases || {};
+  const canonicalKey = aliases[key] || key;
   
-  // Resolve alias to canonical key (e.g. "LW" -> "FL", "CF" -> "FC", "ST" -> "FC")
-  const canonicalKey = (typeof positionAliases !== 'undefined' && positionAliases[key]) 
-    ? positionAliases[key] 
-    : key;
-  
-  const coordsMap = (typeof basePitchCoordinates !== 'undefined') 
-    ? basePitchCoordinates 
-    : (typeof pitchCoordinates !== 'undefined' ? pitchCoordinates : null);
-    
+  const coordsMap = window.basePitchCoordinates || window.pitchCoordinates || null;
   const coords = coordsMap ? coordsMap[canonicalKey] : null;
 
   return {
-    canonicalKey: canonicalKey, // Single Source of Truth Position Name
+    canonicalKey: canonicalKey,
     coords: coords
   };
 }
@@ -143,10 +139,9 @@ function generatePitchTooltip(player) {
       const canonicalKey = resolved.canonicalKey;
       const rating = player.positions[posKey];
 
-      // If two aliases exist (e.g. ST and CF), keep whichever has the higher rating
       if (!resolvedPositions[canonicalKey] || rating > resolvedPositions[canonicalKey].rating) {
         resolvedPositions[canonicalKey] = {
-          displayTag: canonicalKey, // 👈 Uses single source of truth (e.g., FC instead of ST)
+          displayTag: canonicalKey,
           coords: resolved.coords,
           rating: rating
         };
@@ -190,26 +185,26 @@ function calculatePayroll(squad = [], annualOverhead = 0) {
   const totalWeekly = totalAnnual / 52;
 
   return {
-	squadAnnual: squadWageAnnual,
-	overheadAnnual: annualOverhead,
-	totalAnnual: totalAnnual,
-	formatted: {
-	  annual: `£${totalAnnual.toFixed(2)}M`,
-	  monthly: `£${totalMonthly.toFixed(2)}M`,
-	  weekly: totalWeekly < 1 ? `£${Math.round(totalWeekly * 1000)}k` : `£${totalWeekly.toFixed(2)}M`
-	}
+    squadAnnual: squadWageAnnual,
+    overheadAnnual: annualOverhead,
+    totalAnnual: totalAnnual,
+    formatted: {
+      annual: `£${totalAnnual.toFixed(2)}M`,
+      monthly: `£${totalMonthly.toFixed(2)}M`,
+      weekly: totalWeekly < 1 ? `£${Math.round(totalWeekly * 1000)}k` : `£${totalWeekly.toFixed(2)}M`
+    }
   };
 }
 
 function formatPlayerWage(annualWageM, mode) {
   if (mode === 'monthly') {
-	const monthlyK = (annualWageM / 12) * 1000;
-	return monthlyK < 1000 ? `£${monthlyK.toFixed(1)}k / mo` : `£${(annualWageM / 12).toFixed(2)}M / mo`;
+    const monthlyK = (annualWageM / 12) * 1000;
+    return monthlyK < 1000 ? `£${monthlyK.toFixed(1)}k / mo` : `£${(annualWageM / 12).toFixed(2)}M / mo`;
   } else if (mode === 'weekly') {
-	const weeklyK = (annualWageM / 52) * 1000;
-	return weeklyK < 1000 ? `£${weeklyK.toFixed(1)}k / wk` : `£${(annualWageM / 52).toFixed(2)}M / wk`;
+    const weeklyK = (annualWageM / 52) * 1000;
+    return weeklyK < 1000 ? `£${weeklyK.toFixed(1)}k / wk` : `£${(annualWageM / 52).toFixed(2)}M / wk`;
   } else {
-	return `£${annualWageM.toFixed(2)}M / yr`;
+    return `£${annualWageM.toFixed(2)}M / yr`;
   }
 }
 
@@ -217,10 +212,10 @@ function setWageMode(mode) {
   currentWageMode = mode;
   const thHeader = document.getElementById('th-wage-header');
   if (thHeader) {
-	thHeader.textContent = mode === 'monthly' ? 'Monthly Wage' : (mode === 'weekly' ? 'Weekly Wage' : 'Annual Wage');
+    thHeader.textContent = mode === 'monthly' ? 'Monthly Wage' : (mode === 'weekly' ? 'Weekly Wage' : 'Annual Wage');
   }
   if (currentLoadedTeam && currentLoadedTeam.squad) {
-	renderSquadTable(currentLoadedTeam.squad);
+    renderSquadTable(currentLoadedTeam.squad);
   }
 }
 
@@ -229,40 +224,40 @@ function renderSquadTable(squad = []) {
   if (!squadTable) return;
 
   squadTable.innerHTML = squad.map(p => {
-	const genderHTML = renderGenderBadge(p.gender);
-	const flagHTML = renderFlagBadge(p.nat, p.nat2);
-	const isCaptain = p.captainOrder === 1;
-	const armbandHTML = isCaptain ? `<span class="captain-armband" title="Club Captain">&equals;C&equals;</span>` : '';
-	const primaryPosition = p.primaryPos || p.pos || '-';
+    const genderHTML = renderGenderBadge(p.gender);
+    const flagHTML = renderFlagBadge(p.nat, p.nat2);
+    const isCaptain = p.captainOrder === 1;
+    const armbandHTML = isCaptain ? `<span class="captain-armband" title="Club Captain">&equals;C&equals;</span>` : '';
+    const primaryPosition = p.primaryPos || p.pos || '-';
 
-	return `
-	  <tr>
-		<td>${p.num || '-'}</td>
-		<td style="text-align: center;">${flagHTML}</td>
-		<td>
-		  ${genderHTML}<strong>${p.name}</strong>${armbandHTML}
-		</td>
-		<td class="pos-cell">
-		  <span class="pos-badge-trigger">${primaryPosition}</span>
-		  ${generatePitchTooltip(p)}
-		</td>
-		<td>${p.age || '-'}</td>
-		<td><strong>${p.rating}</strong></td>
-		<td>${p.archetype || '-'}</td>
-		<td><strong>${formatPlayerWage(p.wage, currentWageMode)}</strong></td>
-	  </tr>
-	`;
+    return `
+      <tr>
+        <td>${p.num || '-'}</td>
+        <td style="text-align: center;">${flagHTML}</td>
+        <td>
+          ${genderHTML}<strong>${p.name}</strong>${armbandHTML}
+        </td>
+        <td class="pos-cell">
+          <span class="pos-badge-trigger">${primaryPosition}</span>
+          ${generatePitchTooltip(p)}
+        </td>
+        <td>${p.age || '-'}</td>
+        <td><strong>${p.rating}</strong></td>
+        <td>${p.archetype || '-'}</td>
+        <td><strong>${formatPlayerWage(p.wage, currentWageMode)}</strong></td>
+      </tr>
+    `;
   }).join("");
 
   document.querySelectorAll('.pos-cell').forEach(cell => {
-	cell.addEventListener('mouseenter', () => {
-	  const rect = cell.getBoundingClientRect();
-	  if (rect.top < 250) {
-		cell.classList.add('tooltip-below');
-	  } else {
-		cell.classList.remove('tooltip-below');
-	  }
-	});
+    cell.addEventListener('mouseenter', () => {
+      const rect = cell.getBoundingClientRect();
+      if (rect.top < 250) {
+        cell.classList.add('tooltip-below');
+      } else {
+        cell.classList.remove('tooltip-below');
+      }
+    });
   });
 }
 
@@ -271,22 +266,24 @@ function renderTrophyCabinet(teamHonours) {
   if (!cabinetEl) return;
 
   if (!teamHonours || Object.keys(teamHonours).length === 0) {
-	cabinetEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">No major honours.</div>`;
-	return;
+    cabinetEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">No major honours.</div>`;
+    return;
   }
 
-  cabinetEl.innerHTML = Object.keys(teamHonours).map(compKey => {
-	const seasons = teamHonours[compKey];
-	const compDetails = competitions[compKey];
-	if (!compDetails) return '';
+  const comps = window.competitions || {};
 
-	return `
-	  <div class="compact-trophy-row" title="${compDetails.name} (Seasons: ${seasons.map(s => 'S'+s).join(', ')})">
-		<img src="${compDetails.trophyImg}" alt="" class="compact-trophy-icon">
-		<span class="compact-trophy-count">${seasons.length}x</span>
-		<span class="compact-trophy-name">${compDetails.name}</span>
-	  </div>
-	`;
+  cabinetEl.innerHTML = Object.keys(teamHonours).map(compKey => {
+    const seasons = teamHonours[compKey];
+    const compDetails = comps[compKey];
+    if (!compDetails) return '';
+
+    return `
+      <div class="compact-trophy-row" title="${compDetails.name} (Seasons: ${seasons.map(s => 'S'+s).join(', ')})">
+        <img src="${compDetails.trophyImg}" alt="" class="compact-trophy-icon">
+        <span class="compact-trophy-count">${seasons.length}x</span>
+        <span class="compact-trophy-name">${compDetails.name}</span>
+      </div>
+    `;
   }).join("");
 }
 
@@ -295,23 +292,23 @@ function renderNextFixtureWidget(fixtures = []) {
   if (!widgetEl) return;
 
   if (!fixtures || fixtures.length === 0) {
-	widgetEl.innerHTML = `<div style="color: var(--text-muted); font-style: italic;">No upcoming fixtures scheduled.</div>`;
-	return;
+    widgetEl.innerHTML = `<div style="color: var(--text-muted); font-style: italic;">No upcoming fixtures scheduled.</div>`;
+    return;
   }
 
   const nextMatch = fixtures[0];
   const compBadgeHTML = renderCompBadge(nextMatch.competition);
 
   widgetEl.innerHTML = `
-	<div style="display: flex; gap: 6px; align-items: center;">
-	  ${compBadgeHTML}
-	  <span class="match-badge">${nextMatch.venue} Game</span>
-	</div>
-	<div class="opponent-name">vs ${nextMatch.opponent}</div>
-	<div class="match-meta">📅 <strong>${nextMatch.date}</strong></div>
-	<a href="matchday.html?opponent=${encodeURIComponent(nextMatch.opponent)}" class="match-link-btn">
-	  Preview Match →
-	</a>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      ${compBadgeHTML}
+      <span class="match-badge">${nextMatch.venue} Game</span>
+    </div>
+    <div class="opponent-name">vs ${nextMatch.opponent}</div>
+    <div class="match-meta">📅 <strong>${nextMatch.date}</strong></div>
+    <a href="matchday.html?opponent=${encodeURIComponent(nextMatch.opponent)}" class="match-link-btn">
+      Preview Match →
+    </a>
   `;
 }
 
@@ -319,17 +316,14 @@ function renderStartingXIPitch(teamData) {
   const pitchContainer = document.getElementById("starting-xi-pitch");
   if (!pitchContainer) return;
 
-  // 1. Guard check for missing data
   if (!teamData || !teamData.starting_xi || !teamData.squad) {
     pitchContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; padding-top: 140px;">No lineup set</div>`;
     return;
   }
 
-  // 2. Normalize starting_xi whether it is an Array or an Object with numeric keys
   const rawXI = teamData.starting_xi;
   const startingSlots = Array.isArray(rawXI) ? rawXI : Object.values(rawXI);
 
-  // 3. Resolve starting XI players from the squad array
   const starters = startingSlots.map(slot => {
     if (!slot || !slot.player_id) return null;
     const player = teamData.squad.find(p => p.player_id === slot.player_id);
@@ -350,7 +344,6 @@ function renderStartingXIPitch(teamData) {
     return;
   }
 
-  // 4. Identify Matchday Captain (Lowest captainOrder among starters)
   let matchdayCaptainId = null;
   const captainCandidate = starters.reduce((best, curr) => {
     const currOrder = curr.player.captainOrder ?? 99;
@@ -362,51 +355,48 @@ function renderStartingXIPitch(teamData) {
     matchdayCaptainId = captainCandidate.player.player_id;
   }
 
-  // 5. Render shirt nodes
   pitchContainer.innerHTML = starters.map(item => {
-  const p = item.player;
-  const rawPosKey = item.slotPos;
-  
-  // Resolve canonical position name & coordinates
-  const resolved = getPositionCoordinates(rawPosKey);
-  const coords = resolved ? resolved.coords : null;
-  const displayPos = resolved ? resolved.canonicalKey : rawPosKey; // Normalized Base Position
-  
-  if (!coords) return '';
+    const p = item.player;
+    const rawPosKey = item.slotPos;
+    
+    const resolved = getPositionCoordinates(rawPosKey);
+    const coords = resolved ? resolved.coords : null;
+    const displayPos = resolved ? resolved.canonicalKey : rawPosKey;
+    
+    if (!coords) return '';
 
-  const { x, y } = coords;
-  const isCaptain = p.player_id === matchdayCaptainId;
-  const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
-  
-  const flagHTML = renderFlagBadge(p.nat, p.nat2);
-  const genderHTML = renderGenderBadge(p.gender);
+    const { x, y } = coords;
+    const isCaptain = p.player_id === matchdayCaptainId;
+    const armbandHTML = isCaptain ? `<span class="captain-armband" title="Matchday Captain">&equals;C&equals;</span>` : '';
+    
+    const flagHTML = renderFlagBadge(p.nat, p.nat2);
+    const genderHTML = renderGenderBadge(p.gender);
+    const belowClass = y < 25 ? 'tooltip-below' : '';
 
-  const belowClass = y < 25 ? 'tooltip-below' : '';
+    return `
+      <div class="xi-player-node ${belowClass}" style="left: ${x}%; top: ${y}%;">
+        <div class="xi-shirt-badge">
+          ${p.num || '-'}
+        </div>
 
-  return `
-    <div class="xi-player-node ${belowClass}" style="left: ${x}%; top: ${y}%;">
-      <div class="xi-shirt-badge">
-        ${p.num || '-'}
-      </div>
-
-      <div class="xi-popover">
-        <div class="xi-card-popover">
-          <div class="xi-card-header">
-            <span>${displayPos}</span> • <span>RATING: ${p.rating}</span>
-          </div>
-          <div class="xi-card-name">
-            ${flagHTML} ${genderHTML} <strong>${p.name}</strong> ${armbandHTML}
+        <div class="xi-popover">
+          <div class="xi-card-popover">
+            <div class="xi-card-header">
+              <span>${displayPos}</span> • <span>RATING: ${p.rating}</span>
+            </div>
+            <div class="xi-card-name">
+              ${flagHTML} ${genderHTML} <strong>${p.name}</strong> ${armbandHTML}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `;
-}).join("");
-	
+    `;
+  }).join("");
 }
 
 function selectTeam(teamId) {
-  const selectedTeam = leagueDatabase[teamId];
+  const db = window.leagueDatabase || {};
+  const selectedTeam = db[teamId];
   if (!selectedTeam) return;
 
   currentLoadedTeam = selectedTeam;
@@ -430,6 +420,8 @@ function selectTeam(teamId) {
 function loadDashboard(data) {
   currentLoadedTeam = data;
 
+  const cfg = window.leagueConfig || { defaults: { staffOverheadAnnual: 0 } };
+
   const crestImg = document.getElementById("team-crest");
   if (crestImg && data.crest) { crestImg.src = data.crest; crestImg.alt = `${data.name} Crest`; }
 
@@ -439,71 +431,69 @@ function loadDashboard(data) {
   const teamMotto = document.getElementById("team-motto");
   if (teamMotto) teamMotto.textContent = data.motto;
 
-  const overhead = data.staffOverhead || leagueConfig.defaults.staffOverheadAnnual;
+  const overhead = data.staffOverhead || (cfg.defaults && cfg.defaults.staffOverheadAnnual) || 0;
   const payroll = calculatePayroll(data.squad, overhead);
 
   const statRank = document.getElementById("stat-rank");
-  if (statRank) statRank.textContent = "#" + data.stats.rank;
+  if (statRank) statRank.textContent = "#" + (data.stats ? data.stats.rank : '-');
 
   const statPayrollAnnual = document.getElementById("stat-payroll-annual");
   if (statPayrollAnnual) statPayrollAnnual.textContent = payroll.formatted.annual;
 
   const statPayrollSub = document.getElementById("stat-payroll-sub");
   if (statPayrollSub) {
-	statPayrollSub.textContent = `Squad £${payroll.squadAnnual.toFixed(1)}M + Ops £${payroll.overheadAnnual.toFixed(1)}M`;
+    statPayrollSub.textContent = `Squad £${payroll.squadAnnual.toFixed(1)}M + Ops £${payroll.overheadAnnual.toFixed(1)}M`;
   }
 
   const statPayrollWeekly = document.getElementById("stat-payroll-weekly");
   if (statPayrollWeekly) statPayrollWeekly.textContent = payroll.formatted.weekly;
 
   const statSquadSize = document.getElementById("stat-squad-size");
-  if (statSquadSize) statSquadSize.textContent = data.squad.length;
+  if (statSquadSize) statSquadSize.textContent = data.squad ? data.squad.length : 0;
 
   const nicknameEl = document.getElementById("meta-nickname");
   if (nicknameEl) nicknameEl.textContent = data.nickname || data.name;
 
   const stadiumEl = document.getElementById("meta-stadium");
   if (stadiumEl && data.stadium) {
-	stadiumEl.textContent = `${data.stadium.name} (${data.stadium.capacity.toLocaleString()})`;
+    stadiumEl.textContent = `${data.stadium.name} (${(data.stadium.capacity || 0).toLocaleString()})`;
   }
 
   const stadiumImg = document.getElementById("stadium-img");
   if (stadiumImg && data.stadium && (data.stadium.photo || data.stadium.img)) {
-	stadiumImg.src = data.stadium.photo || data.stadium.img;
-	stadiumImg.alt = `${data.stadium.name} Photo`;
+    stadiumImg.src = data.stadium.photo || data.stadium.img;
+    stadiumImg.alt = `${data.stadium.name} Photo`;
   }
 
-  // Dynamic Manager Binding with Flags
   const managerEl = document.getElementById("meta-manager");
   if (managerEl && data.staff) {
-	const mgr = (data.staff.senior && data.staff.senior.manager) ? data.staff.senior.manager : data.staff.manager;
-	if (mgr) {
-	  const flagsHTML = renderFlagBadge(mgr.nat, mgr.nat2);
-	  managerEl.innerHTML = `${flagsHTML} <span>${mgr.name}</span>`;
-	}
+    const mgr = (data.staff.senior && data.staff.senior.manager) ? data.staff.senior.manager : data.staff.manager;
+    if (mgr) {
+      const flagsHTML = renderFlagBadge(mgr.nat, mgr.nat2);
+      managerEl.innerHTML = `${flagsHTML} <span>${mgr.name}</span>`;
+    }
   }
 
-  // Dynamic Captain Binding with Flags
   const captainEl = document.getElementById("meta-captain");
   if (captainEl && data.squad) {
-	const primaryCaptain = data.squad.find(p => p.captainOrder === 1) || data.squad[0];
-	if (primaryCaptain) {
-	  const flagsHTML = renderFlagBadge(primaryCaptain.nat, primaryCaptain.nat2);
-	  captainEl.innerHTML = `${flagsHTML} <span>${primaryCaptain.name}</span>`;
-	} else {
-	  captainEl.textContent = '-';
-	}
+    const primaryCaptain = data.squad.find(p => p.captainOrder === 1) || data.squad[0];
+    if (primaryCaptain) {
+      const flagsHTML = renderFlagBadge(primaryCaptain.nat, primaryCaptain.nat2);
+      captainEl.innerHTML = `${flagsHTML} <span>${primaryCaptain.name}</span>`;
+    } else {
+      captainEl.textContent = '-';
+    }
   }
 
   const sponsorEl = document.getElementById("sponsor-name");
   if (sponsorEl && data.sponsor) {
-	sponsorEl.innerHTML = `${data.sponsor.name} <span class="sponsor-sector">(${data.sponsor.sector})</span>`;
+    sponsorEl.innerHTML = `${data.sponsor.name} <span class="sponsor-sector">(${data.sponsor.sector})</span>`;
   }
 
   const sponsorLogoImg = document.getElementById("sponsor-logo");
   if (sponsorLogoImg && data.sponsor && data.sponsor.logo) {
-	sponsorLogoImg.src = data.sponsor.logo;
-	sponsorLogoImg.alt = `${data.sponsor.name} Logo`;
+    sponsorLogoImg.src = data.sponsor.logo;
+    sponsorLogoImg.alt = `${data.sponsor.name} Logo`;
   }
   
   renderTrophyCabinet(data.honours);
@@ -511,20 +501,19 @@ function loadDashboard(data) {
   renderSquadTable(data.squad);
   renderStartingXIPitch(data);
 
-  // Render Upcoming Fixtures with Competition Tags
   const fixturesTable = document.querySelector("#fixtures-table tbody");
   if (fixturesTable && data.fixtures) {
-	fixturesTable.innerHTML = data.fixtures.map(f => {
-	  const compBadge = renderCompBadge(f.competition);
-	  return `
-		<tr>
-		  <td>${compBadge}</td>
-		  <td><strong>${f.opponent}</strong></td>
-		  <td>${f.venue}</td>
-		  <td>${f.date}</td>
-		</tr>
-	  `;
-	}).join("");
+    fixturesTable.innerHTML = data.fixtures.map(f => {
+      const compBadge = renderCompBadge(f.competition);
+      return `
+        <tr>
+          <td>${compBadge}</td>
+          <td><strong>${f.opponent}</strong></td>
+          <td>${f.venue}</td>
+          <td>${f.date}</td>
+        </tr>
+      `;
+    }).join("");
   }
 }
 
@@ -534,45 +523,58 @@ function openSplash() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.documentElement.style.setProperty('--league-primary', leagueConfig.colors.primary);
-  document.documentElement.style.setProperty('--league-secondary', leagueConfig.colors.secondary);
-  document.documentElement.style.setProperty('--league-accent', leagueConfig.colors.accent);
+  const cfg = window.leagueConfig || { colors: {}, defaults: {} };
+  const db = window.leagueDatabase || {};
+
+  if (cfg.colors) {
+    if (cfg.colors.primary) document.documentElement.style.setProperty('--league-primary', cfg.colors.primary);
+    if (cfg.colors.secondary) document.documentElement.style.setProperty('--league-secondary', cfg.colors.secondary);
+    if (cfg.colors.accent) document.documentElement.style.setProperty('--league-accent', cfg.colors.accent);
+  }
 
   const leagueName = document.getElementById("league-name");
-  if (leagueName) leagueName.textContent = leagueConfig.name;
+  if (leagueName && cfg.name) leagueName.textContent = cfg.name;
 
   const leagueMotto = document.getElementById("league-motto");
-  if (leagueMotto) leagueMotto.textContent = leagueConfig.motto;
+  if (leagueMotto && cfg.motto) leagueMotto.textContent = cfg.motto;
 
   const leagueLogo = document.getElementById("league-logo");
-  if (leagueLogo) leagueLogo.src = leagueConfig.logo;
+  if (leagueLogo && cfg.logo) leagueLogo.src = cfg.logo;
 
   const teamPicker = document.querySelector(".team-picker");
   if (teamPicker) {
-	teamPicker.innerHTML = Object.keys(leagueDatabase).map(teamId => {
-	  const team = leagueDatabase[teamId];
-	  const nameColor = getReadableTextColor(team.colors.primary, team.colors.secondary);
-	  const mottoColor = getReadableTextColor(team.colors.primary, team.colors.accent);
+    teamPicker.innerHTML = Object.keys(db).map(teamId => {
+      const team = db[teamId];
+      const nameColor = getReadableTextColor(team.colors.primary, team.colors.secondary);
+      const mottoColor = getReadableTextColor(team.colors.primary, team.colors.accent);
 
-	  return `
-		<button class="team-btn" 
-				onclick="selectTeam('${teamId}')"
-				style="background: ${team.colors.primary}; 
-					   border: 1px solid ${team.colors.secondary}; 
-					   border-left: 5px solid ${team.colors.accent};">
-		  <img src="${team.crest}" alt="" class="team-btn-crest">
-		  <div>
-			<div style="font-size: 0.95rem; line-height: 1.2; font-weight: 800; color: ${nameColor};">
-			  ${team.name}
-			</div>
-			<div style="font-size: 0.75rem; color: ${mottoColor}; font-weight: 600; margin-top: 2px;">
-			  ${team.motto}
-			</div>
-		  </div>
-		</button>
-	  `;
-	}).join("");
+      return `
+        <button class="team-btn" 
+                onclick="selectTeam('${teamId}')"
+                style="background: ${team.colors.primary}; 
+                       border: 1px solid ${team.colors.secondary}; 
+                       border-left: 5px solid ${team.colors.accent};">
+          <img src="${team.crest}" alt="" class="team-btn-crest">
+          <div>
+            <div style="font-size: 0.95rem; line-height: 1.2; font-weight: 800; color: ${nameColor};">
+              ${team.name}
+            </div>
+            <div style="font-size: 0.75rem; color: ${mottoColor}; font-weight: 600; margin-top: 2px;">
+              ${team.motto}
+            </div>
+          </div>
+        </button>
+      `;
+    }).join("");
   }
 
-  loadDashboard(leagueDatabase["dubisha-flames"]);
+  const initialKey = Object.keys(db)[0];
+  if (initialKey && db[initialKey]) {
+    loadDashboard(db[initialKey]);
+  }
 });
+
+// Explicitly bind interactive handlers to window for inline onclick attributes
+window.selectTeam = selectTeam;
+window.openSplash = openSplash;
+window.setWageMode = setWageMode;
