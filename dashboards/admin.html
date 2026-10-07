@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Hub - Admin Panel</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --border-line: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #22c55e;
+      --accent-danger: #ef4444;
+      --primary: #3b82f6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); padding: 24px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .panel { background: var(--card-bg); border: 1px solid var(--border-line); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; }
+    h2 { font-size: 1.2rem; margin-bottom: 16px; color: var(--text-main); }
+    p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+
+    .flex-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+    input, select, textarea {
+      background: #0f172a;
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    input:focus, select:focus { outline: 1px solid var(--primary); }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s ease;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--accent); color: #000; }
+    .btn-danger { background: var(--accent-danger); color: #fff; }
+
+    /* Roster Table */
+    .table-wrapper { overflow-x: auto; margin-top: 16px; border: 1px solid var(--border-line); border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+    th { background: #0b1120; padding: 10px; border-bottom: 1px solid var(--border-line); color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--border-line); }
+    tr:last-child td { border-bottom: none; }
+    
+    .input-sm { width: 60px; }
+    .input-md { width: 140px; }
+    .status-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .status-syncing { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-ok { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .status-err { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="flex-between" style="margin-bottom: 24px;">
+      <div>
+        <h1>Club Dashboard Admin</h1>
+        <p>Edit squad records and commit directly to GitHub.</p>
+      </div>
+      <div id="sync-status" class="status-badge" style="display: none;"></div>
+    </div>
+
+    <!-- Auth / Config Panel -->
+    <div class="panel" id="auth-panel">
+      <h2>GitHub Repository Authentication</h2>
+      <div class="flex-row">
+        <input type="text" id="repo-owner" placeholder="Owner / Username (e.g. johndoe)" class="input-md">
+        <input type="text" id="repo-name" placeholder="Repo Name (e.g. club-hub)" class="input-md">
+        <input type="text" id="repo-path" placeholder="Path (e.g. data.json)" value="data.json" class="input-md">
+        <input type="password" id="repo-pat" placeholder="Personal Access Token (ghp_...)" style="flex-grow: 1;">
+        <button class="btn btn-primary" onclick="connectAndLoad()">Load Data</button>
+      </div>
+    </div>
+
+    <!-- Main Workspace (Hidden until file is loaded) -->
+    <div id="workspace" style="display: none;">
+      <!-- Controls Bar -->
+      <div class="panel flex-between">
+        <div class="flex-row">
+          <label style="font-size: 0.85rem; font-weight: 600;">Active Club:</label>
+          <select id="team-selector" onchange="switchTeam(this.value)"></select>
+          <button class="btn btn-primary" onclick="addNewPlayer()">+ Add Player</button>
+        </div>
+        <div class="flex-row">
+          <input type="text" id="commit-msg" placeholder="Commit message..." value="Update squad roster via Admin" style="width: 250px;">
+          <button class="btn btn-success" onclick="saveAndCommit()">Commit to GitHub</button>
+        </div>
+      </div>
+
+      <!-- Squad Editor Table -->
+      <div class="panel">
+        <h2>Squad Roster</h2>
+        <div class="table-wrapper">
+          <table id="roster-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Nat</th>
+                <th>Gender</th>
+                <th>Base Pos</th>
+                <th>Age</th>
+                <th>OVR</th>
+                <th>Wage (£M)</th>
+                <th>Position Ratings (JSON)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="roster-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rawFileSha = null;
+    let databaseObject = null;
+    let activeTeamKey = null;
+
+    // Load credentials from sessionStorage if already saved
+    window.addEventListener("DOMContentLoaded", () => {
+      if (sessionStorage.getItem("gh_pat")) {
+        document.getElementById("repo-owner").value = sessionStorage.getItem("gh_owner") || "";
+        document.getElementById("repo-name").value = sessionStorage.getItem("gh_name") || "";
+        document.getElementById("repo-path").value = sessionStorage.getItem("gh_path") || "data.json";
+        document.getElementById("repo-pat").value = sessionStorage.getItem("gh_pat") || "";
+      }
+    });
+
+    function setStatus(msg, type) {
+      const el = document.getElementById("sync-status");
+      el.style.display = "inline-block";
+      el.className = `status-badge status-${type}`;
+      el.textContent = msg;
+    }
+
+    // 1. GITHUB API: FETCH FILE CONTENT AND SHA
+    async function connectAndLoad() {
+      const owner = document.getElementById("repo-owner").value.trim();
+      const repo = document.getElementById("repo-name").value.trim();
+      const path = document.getElementById("repo-path").value.trim();
+      const pat = document.getElementById("repo-pat").value.trim();
+
+      if (!owner || !repo || !pat) {
+        alert("Please provide repo owner, repo name, and a GitHub PAT.");
+        return;
+      }
+
+      // Persist in session
+      sessionStorage.setItem("gh_owner", owner);
+      sessionStorage.setItem("gh_name", repo);
+      sessionStorage.setItem("gh_path", path);
+      sessionStorage.setItem("gh_pat", pat);
+
+      setStatus("Fetching repository file...", "syncing");
+
+      try {
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const res = await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${pat}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error(`GitHub responded with ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        rawFileSha = data.sha;
+
+        // Decode UTF-8 Base64 content
+        const decodedString = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+        
+        // Handle either pure JSON or a JS file like 'const leagueDatabase = {...}'
+        if (decodedString.trim().startsWith("{") || decodedString.trim().startsWith("[")) {
+          databaseObject = JSON.parse(decodedString);
+        } else {
+          // Extracts JSON payload from JS declarations
+          const jsonMatch = decodedString.match(/=\s*(\{[\s\S]*\});?\s*$/);
+          if (jsonMatch && jsonMatch[1]) {
+            databaseObject = JSON.parse(jsonMatch[1]);
+          } else {
+            throw new Error("Could not parse JSON structure from target file.");
+          }
+        }
+
+        setStatus("File loaded successfully", "ok");
+        document.getElementById("workspace").style.display = "block";
+        initWorkspace();
+      } catch (err) {
+        setStatus(`Error: ${err.message}`, "err");
+        console.error(err);
+      }
+    }
+
+    // 2. UI WORKSPACE SETUP
+    function initWorkspace() {
+      const selector = document.getElementById("team-selector");
+      const teamKeys = Object.keys(databaseObject.leagueDatabase || databaseObject);
+      
+      selector.innerHTML = teamKeys.map(k => `<option value="${k}">${k}</option>`).join("");
+      activeTeamKey = teamKeys[0];
+      renderRoster();
+    }
+
+    function switchTeam(teamKey) {
+      activeTeamKey = teamKey;
+      renderRoster();
+    }
+
+    function getActiveSquad() {
+      if (databaseObject.leagueDatabase) {
+        return databaseObject.leagueDatabase[activeTeamKey].squad;
+      }
+      return databaseObject[activeTeamKey].squad;
+    }
+
+    function renderRoster() {
+      const squad = getActiveSquad();
+      const tbody = document.getElementById("roster-tbody");
+
+      tbody.innerHTML = squad.map((p, idx) => `
+        <tr data-index="${idx}">
+          <td><input type="number" class="input-sm" value="${p.num || 0}" onchange="updatePlayerField(${idx}, 'num', parseInt(this.value, 10))"></td>
+          <td><input type="text" class="input-sm" value="${p.player_id}" onchange="updatePlayerField(${idx}, 'player_id', this.value)"></td>
+          <td><input type="text" class="input-md" value="${p.name}" onchange="updatePlayerField(${idx}, 'name', this.value)"></td>
+          <td><input type="text" class="input-sm" value="${p.nat}" onchange="updatePlayerField(${idx}, 'nat', this.value)"></td>
+          <td>
+            <select onchange="updatePlayerField(${idx}, 'gender', this.value)">
+              <option value="M" ${p.gender === 'M' ? 'selected' : ''}>M</option>
+              <option value="F" ${p.gender === 'F' ? 'selected' : ''}>F</option>
+              <option value="X" ${p.gender === 'X' ? 'selected' : ''}>X</option>
+            </select>
+          </td>
+          <td><input type="text" class="input-sm" value="${p.primaryPos || p.pos || ''}" onchange="updatePlayerField(${idx}, 'primaryPos', this.value)"></td>
+          <td><input type="number" class="input-sm" value="${p.age || 0}" onchange="updatePlayerField(${idx}, 'age', parseInt(this.value, 10))"></td>
+          <td><input type="number" class="input-sm" value="${p.rating || 0}" onchange="updatePlayerField(${idx}, 'rating', parseInt(this.value, 10))"></td>
+          <td><input type="number" step="0.01" class="input-sm" value="${p.wage || 0}" onchange="updatePlayerField(${idx}, 'wage', parseFloat(this.value))"></td>
+          <td>
+            <input type="text" style="width: 200px; font-family: monospace;" 
+                   value='${JSON.stringify(p.positions || {})}' 
+                   onchange="updatePositionsField(${idx}, this.value, this)">
+          </td>
+          <td><button class="btn btn-danger" style="padding: 4px 8px;" onclick="removePlayer(${idx})">×</button></td>
+        </tr>
+      `).join("");
+    }
+
+    // 3. REACTIVE SQUAD MUTATIONS
+    function updatePlayerField(index, field, value) {
+      const squad = getActiveSquad();
+      squad[index][field] = value;
+    }
+
+    function updatePositionsField(index, jsonString, inputEl) {
+      try {
+        const parsed = JSON.parse(jsonString);
+        const squad = getActiveSquad();
+        squad[index].positions = parsed;
+        inputEl.style.borderColor = "var(--border-line)";
+      } catch (err) {
+        inputEl.style.borderColor = "var(--accent-danger)";
+        alert("Invalid JSON format for position ratings!");
+      }
+    }
+
+    function addNewPlayer() {
+      const squad = getActiveSquad();
+      squad.push({
+        player_id: "A" + Math.floor(1000 + Math.random() * 9000),
+        num: squad.length + 1,
+        name: "New Player",
+        nat: "AKC",
+        gender: "M",
+        primaryPos: "MC",
+        age: 21,
+        rating: 65,
+        wage: 0.50,
+        positions: { "MC": 100 }
+      });
+      renderRoster();
+    }
+
+    function removePlayer(index) {
+      if (!confirm("Are you sure you want to remove this player?")) return;
+      const squad = getActiveSquad();
+      squad.splice(index, 1);
+      renderRoster();
+    }
+
+    // 4. GITHUB API: COMMIT MUTATIONS VIA PUT
+    async function saveAndCommit() {
+      const owner = sessionStorage.getItem("gh_owner");
+      const repo = sessionStorage.getItem("gh_name");
+      const path = sessionStorage.getItem("gh_path");
+      const pat = sessionStorage.getItem("gh_pat");
+      const msg = document.getElementById("commit-msg").value.trim() || "Update squad data";
+
+      setStatus("Committing changes to GitHub...", "syncing");
+
+      try {
+        // Serialize updated document with neat formatting
+        const serialized = JSON.stringify(databaseObject, null, 2);
+        // Base64 encode for UTF-8
+        const encodedContent = btoa(unescape(encodeURIComponent(serialized)));
+
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${pat}`,
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.github.v3+json"
+          },
+          body: JSON.stringify({
+            message: msg,
+            content: encodedContent,
+            sha: rawFileSha
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || `HTTP ${res.status}`);
+        }
+
+        const resData = await res.json();
+        // Update to the new commit's SHA so subsequent saves succeed
+        rawFileSha = resData.content.sha;
+        setStatus("Changes committed successfully!", "ok");
+      } catch (err) {
+        setStatus(`Commit failed: ${err.message}`, "err");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>League Dashboard Hub</title>
+
+  <!-- EXTERNAL STYLES -->
+  <link rel="stylesheet" href="theme.css?v=1.22">
+</head>
+<body>
+
+  <!-- SPLASH OVERLAY -->
+  <div id="splash">
+    <div class="splash-box">
+      <img id="league-logo" src="" alt="League Logo" class="league-logo">
+      <h1 id="league-name">League Hub</h1>
+      <div id="league-motto" class="league-motto">Select a team dashboard</div>
+      
+      <div class="team-picker"></div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-content">
+      <div class="brand-row">
+        <img id="team-crest" src="" alt="Team Crest" class="crest-img">
+        <div>
+          <h1 id="team-name">Select a Team</h1>
+          <div id="team-motto">No team loaded</div>
+        </div>
+      </div>
+      <button class="switch-btn" onclick="openSplash()">← Switch Team</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- Cards -->
+    <div class="grid">
+      <div class="card">
+        <div class="label">League Rank</div>
+        <div class="value" id="stat-rank">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Total Payroll</div>
+        <div class="value" id="stat-payroll-annual">-</div>
+        <div class="subtext" id="stat-payroll-sub">Incl. Overhead</div>
+      </div>
+      <div class="card">
+        <div class="label">Weekly Outlay</div>
+        <div class="value" id="stat-payroll-weekly">-</div>
+        <div class="subtext">Squad + Staff</div>
+      </div>
+      <div class="card">
+        <div class="label">Squad Size</div>
+        <div class="value" id="stat-squad-size">-</div>
+      </div>
+    </div>
+
+    <!-- Club Overview Section -->
+    <section>
+      <div class="section-header">
+        <h2>Club Overview</h2>
+      </div>
+
+      <div class="club-overview-card">
+        <div class="overview-info-col">
+          <div class="overview-top-row">
+            <div class="stadium-box">
+              <img id="stadium-img" src="https://placehold.co/140x100/1e293b/94a3b8?text=Stadium+Photo" alt="Stadium" class="stadium-img">
+            </div>
+
+            <div class="club-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Nickname(s)</span>
+                <span class="meta-val" id="meta-nickname">-</span>
+              </div>
+
+              <div class="meta-item">
+                <span class="meta-label">Stadium</span>
+                <span class="meta-val" id="meta-stadium">-</span>
+              </div>
+
+              <div class="meta-item">
+                <span class="meta-label">Manager</span>
+                <span class="meta-val" id="meta-manager">-</span>
+              </div>
+
+              <div class="meta-item">
+                <span class="meta-label">Captain</span>
+                <span class="meta-val" id="meta-captain">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sponsor-bar">
+            <div>
+              <span class="meta-label">Primary Sponsor</span>
+              <div class="sponsor-name" id="sponsor-name">-</div>
+            </div>
+            <img id="sponsor-logo" src="https://placehold.co/100x32/1e293b/ffffff?text=SPONSOR" alt="Sponsor Logo" class="sponsor-logo">
+          </div>
+        </div>
+
+        <div class="overview-trophy-col">
+          <div class="trophy-cabinet-title">Trophy Cabinet</div>
+          <div id="trophy-cabinet" class="compact-trophy-cabinet"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-COLUMN DASHBOARD ROW (SQUAD ROSTER + NEXT MATCH) -->
+    <div class="dashboard-row">
+      <section class="main-col" style="margin-bottom: 0;">
+        <div class="section-header">
+          <h2>Squad Roster</h2>
+          
+          <fieldset class="radio-toggle-group">
+            <legend class="sr-only">Wage Display Mode</legend>
+
+            <label class="radio-label">
+              <input type="radio" name="wageMode" value="annual" onchange="setWageMode('annual')">
+              <span>Annual</span>
+            </label>
+
+            <label class="radio-label">
+              <input type="radio" name="wageMode" value="monthly" onchange="setWageMode('monthly')">
+              <span>Monthly</span>
+            </label>
+
+            <label class="radio-label">
+              <input type="radio" name="wageMode" value="weekly" checked onchange="setWageMode('weekly')">
+              <span>Weekly</span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="squad-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th style="text-align: center;">Nat</th>
+                <th>Player</th>
+                <th>Primary Pos</th>
+                <th>Age</th>
+                <th>Rating</th>
+                <th>Archetype</th>
+                <th id="th-wage-header">Weekly Wage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS Populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="side-col">
+        <div class="section-header">
+          <h2>Next Match</h2>
+        </div>
+        <div id="next-fixture-widget" class="next-match-card"></div>
+        <!-- Starting XI Pitch Widget -->
+        <div class="section-header" style="margin-top: 24px;">
+          <h2>Starting XI</h2>
+        </div>
+        <div class="starting-xi-card">
+          <div id="starting-xi-pitch" class="xi-pitch-graphic">
+            <!-- JS Rendered Pitch Nodes -->
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section>
+      <div class="section-header">
+        <h2>Upcoming Fixtures</h2>
+      </div>
+      <div class="table-wrapper">
+        <table id="fixtures-table">
+          <thead>
+            <tr>
+              <th>Comp</th>
+              <th>Opponent</th>
+              <th>Venue</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- JS Populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- EXTERNAL SCRIPTS (Data must load before application script) -->
+  <script src="data.js?v=1.22"></script>
+  <script src="script.js?v=1.22"></script>
+</body>
+</html>
