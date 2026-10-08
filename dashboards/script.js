@@ -414,8 +414,8 @@ function selectTeam(teamId) {
   document.documentElement.style.setProperty('--secondary-color', selectedTeam.colors.secondary);
   document.documentElement.style.setProperty('--accent-color', selectedTeam.colors.accent);
 
-  document.documentElement.style.setProperty('--secondary-text-color', secondaryContrastText);
-  document.documentElement.style.setProperty('--primary-text-color', primaryContrastText);
+  document.documentElement.style.setProperty('--on-secondary', secondaryContrastText);
+  document.documentElement.style.setProperty('--on-primary', primaryContrastText);
 
   loadDashboard(selectedTeam);
 
