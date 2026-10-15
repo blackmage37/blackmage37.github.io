@@ -98,6 +98,41 @@ const competitions = {
 	trophyImg: "https://placehold.co/40x40/b45309/ffffff?text=KP",
 	color: "#b45309",
 	textColor: "#ffffff"
+  },
+  "national-championship": { 
+	name: "National Champions (URFF)", 
+	code: "NC", 
+	trophyImg: "https://placehold.co/40x40/ffffff/000000?text=NC",
+	color: "#ffffff",
+	textColor: "#000000"
+  },
+  "secondary-cup": { 
+	name: "Rabastor Associates Trophy", 
+	code: "RT", 
+	trophyImg: "https://placehold.co/40x40/ffffff/000000?text=RT",
+	color: "#ffffff",
+	textColor: "#000000"
+  },
+  "continental-champs": { 
+	name: "DSAFF Champions' League", 
+	code: "DCL", 
+	trophyImg: "https://placehold.co/40x40/ff0000/ffffff?text=DCL",
+	color: "#ff0000",
+	textColor: "#ffffff"
+  },
+  "continental-cup": { 
+	name: "DSAFF Delusia League", 
+	code: "DDL", 
+	trophyImg: "https://placehold.co/40x40/ff0000/ffffff?text=DDL",
+	color: "#ff0000",
+	textColor: "#ffffff"
+  },
+  "continental-super-cup": { 
+	name: "DSAFF Super Cup", 
+	code: "DSC", 
+	trophyImg: "https://placehold.co/40x40/ff0000/ffffff?text=DDL",
+	color: "#ff0000",
+	textColor: "#ffffff"
   }
 };
 

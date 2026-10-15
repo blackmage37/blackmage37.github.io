@@ -267,6 +267,26 @@
             <input type="text" id="sponsor-logo" onchange="updateNestedMeta('sponsor', 'logo', this.value)">
           </div>
         </div>
+
+        <h3>Trophy Cabinet</h3>
+        <p style="margin-bottom: 8px;">Track titles won per competition. Enter or select the honour key (e.g. <code>league-title</code>) and comma-separated winning seasons (e.g. <code>1, 2, 3, 5</code>).</p>
+        
+        <div class="table-wrapper" style="margin-bottom: 12px; max-width: 650px;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 200px;">Honour / Competition Key</th>
+                <th>Winning Editions / Seasons</th>
+                <th style="width: 50px; text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="honours-tbody">
+              <!-- JS Populated -->
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="addHonourRow()">+ Add Trophy</button>
+
       </div>
 
       <!-- TAB 2: SQUAD ROSTER -->
@@ -459,6 +479,133 @@
       loadTeamData();
     }
 
+    // Pre-defined honour keys corresponding to your competitions setup
+    const KNOWN_HONOUR_KEYS = [
+      // delineates between national championship and league title for leagues with playoff systems
+      // use league-title if there is no separate playoff
+      { key: "national-championship", label: "National Championship" },
+      { key: "league-title", label: "League Title" },
+      // for nations with multiple cup competitions, three tiers defined plus "trophy", "shield", and "plate" options
+      { key: "cup-winner", label: "Domestic Cup Winner" },
+      { key: "secondary-cup", label: "Secondary Domestic Cup" },
+      { key: "tertiary-cup", label: "Tertiary Domestic Cup" },
+      { key: "domestic-trophy", label: "Trophy Winner" },
+      { key: "domestic-shield", label: "Shield Winner" },
+      { key: "domestic-plate", label: "Plate Winner" },
+      // super cup for one-off competitions between trophy winners domestically
+      { key: "super-cup", label: "Super Cup (domestic)" },
+      // continental delineated from international championship for situations like IFCF vs CAFA/ARC/FFI etc
+      { key: "continental-champs", label: "Continental Championship" },
+      { key: "international-champs", label: "International Championship" },
+      // second and third tier competitions enabled for UEL, ConfL type hierarchy at both int'l and continental level
+      { key: "continental-cup", label: "Continental Cup" },
+      { key: "continental-trophy", label: "Continental Trophy" },
+      { key: "international-cup", label: "International Cup" },
+      { key: "international-trophy", label: "International Trophy" },
+      // world club cup equivalent, just in case
+      { key: "world-club-championship", label: "World Club Championship" },
+      // different super cups to differentiate from domestic
+      { key: "continental-super-cup", label: "Continental Super Cup" },
+      { key: "international-super-cup", label: "International Super Cup" }
+    ];
+
+    function renderHonours() {
+      const team = databaseObject[activeTeamKey];
+      if (!team.honours) team.honours = {};
+
+      const tbody = document.getElementById("honours-tbody");
+      if (!tbody) return;
+
+      const entries = Object.entries(team.honours);
+
+      if (entries.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="color: var(--text-muted); font-style: italic; text-align: center; padding: 12px;">No trophies recorded.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = entries.map(([honourKey, seasons]) => {
+        const seasonsStr = Array.isArray(seasons) ? seasons.join(", ") : (seasons || "");
+        const isCustom = !KNOWN_HONOUR_KEYS.some(k => k.key === honourKey);
+
+        return `
+          <tr>
+            <td>
+              <input type="text" class="input-md" list="known-honours-list" value="${honourKey}" 
+                    placeholder="e.g. league-title" style="width: 100%;"
+                    onchange="updateHonourKey('${honourKey}', this.value)">
+              <datalist id="known-honours-list">
+                ${KNOWN_HONOUR_KEYS.map(k => `<option value="${k.key}">${k.label}</option>`).join("")}
+              </datalist>
+            </td>
+            <td>
+              <input type="text" style="width: 100%; font-family: monospace;" value="${seasonsStr}" 
+                    placeholder="e.g. 1, 2, 3, 5, 7"
+                    onchange="updateHonourEditions('${honourKey}', this.value)">
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-danger" style="padding: 4px 8px;" 
+                      onclick="removeHonourRow('${honourKey}')">×</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function addHonourRow() {
+      const team = databaseObject[activeTeamKey];
+      if (!team.honours) team.honours = {};
+
+      // Pick the first unused default key, or generate a custom key fallback
+      const existingKeys = Object.keys(team.honours);
+      const nextDefault = KNOWN_HONOUR_KEYS.find(k => !existingKeys.includes(k.key));
+      
+      let newKey = nextDefault ? nextDefault.key : "custom-trophy";
+      let count = 1;
+      while (team.honours.hasOwnProperty(newKey)) {
+        newKey = `custom-trophy-${count++}`;
+      }
+
+      team.honours[newKey] = [];
+      renderHonours();
+    }
+
+    function updateHonourKey(oldKey, newKeyRaw) {
+      const newKey = newKeyRaw.trim().toLowerCase().replace(/\s+/g, '-');
+      if (!newKey || oldKey === newKey) return;
+
+      const honours = databaseObject[activeTeamKey].honours;
+      if (honours.hasOwnProperty(newKey)) {
+        alert(`The key "${newKey}" is already assigned in this trophy cabinet.`);
+        renderHonours();
+        return;
+      }
+
+      // Preserve the existing seasons array under the newly renamed key
+      honours[newKey] = honours[oldKey] || [];
+      delete honours[oldKey];
+      renderHonours();
+    }
+
+    function updateHonourEditions(honourKey, rawValue) {
+      const honours = databaseObject[activeTeamKey].honours;
+      if (!honours) return;
+
+      // Converts "1, 2,  3, 5, 7" into [1, 2, 3, 5, 7]
+      const parsedSeasons = rawValue
+        .split(",")
+        .map(s => parseInt(s.trim(), 10))
+        .filter(n => !isNaN(n));
+
+      honours[honourKey] = parsedSeasons;
+    }
+
+    function removeHonourRow(honourKey) {
+      const honours = databaseObject[activeTeamKey].honours;
+      if (!honours) return;
+      delete honours[honourKey];
+      renderHonours();
+    }
+
     function switchTeam(teamKey) {
       activeTeamKey = teamKey;
       loadTeamData();
@@ -495,6 +642,7 @@
       document.getElementById("sponsor-logo").value = sponsor.logo || "";
 
       // Roster & Fixtures
+      renderHonours();
       renderRoster();
       renderFixtures();
     }
