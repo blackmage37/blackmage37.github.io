@@ -60,6 +60,7 @@ input, select {
   min-height: 80vh;
 }
 .metaRow { display: flex; gap: 2em; opacity: 0.85; font-size: 0.95em; }
+.seed { font-family: Consolas, monospace; color: #9fd3ff; }
 .mainRow { display: flex; align-items: center; gap: 1.5em; }
 .teamZone { display: flex; align-items: center; gap: 0.75em; }
 .teamName { font-size: 1.4em; font-weight: 600; letter-spacing: 0.04em; }

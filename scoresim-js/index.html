@@ -55,6 +55,10 @@
         <select id="awayTactics"></select>
       </div>
     </section>
+    <div class="field">
+      <label for="seedInput">Match seed (optional: leave blank for a new random match, or enter a seed to replay one)</label>
+      <input id="seedInput" type="text" inputmode="numeric" placeholder="e.g. 123456789" />
+    </div>
     <button id="proceedBtn" class="bigBtn">Proceed to match</button>
   </main>
 
@@ -63,6 +67,7 @@
     <div class="metaRow">
       <div id="sbTournament"></div>
       <div id="sbVenue"></div>
+      <div id="sbSeed" class="seed"></div>
     </div>
     <div class="mainRow">
       <div class="teamZone">
@@ -101,6 +106,7 @@
   <script src="data/clubs.js"></script>
   <script src="data/nations.js"></script>
   <script src="js/strength.js"></script>
+  <script src="js/rng.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/ui.js"></script>
 </body>

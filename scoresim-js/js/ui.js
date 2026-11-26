@@ -19,6 +19,8 @@ const TOURNAMENTS = [
   { name: 'UEFA World Cup qualifiers', teams: 'nations' },
 ];
 
+// Each option has value() for fixed settings and random(rand) for the
+// "Random" entry, which draws from the match's seeded generator.
 const CROWD_OPTIONS = [
   { label: 'Hosts have no support', value: () => 0 },
   { label: 'Hosts have weak support', value: () => 2 },
@@ -26,7 +28,7 @@ const CROWD_OPTIONS = [
   { label: 'Hosts enjoy good support', value: () => 5 },
   { label: 'Hosts enjoy outstanding support', value: () => 7 },
   { label: 'Teams play on neutral venue', value: () => 0 },
-  { label: 'Random support', value: () => Math.round(Math.random() * 8) },
+  { label: 'Random support', random: (r) => Math.round(r() * 8) },
 ];
 
 const MORALE_OPTIONS = [
@@ -35,7 +37,7 @@ const MORALE_OPTIONS = [
   { label: 'Average', value: () => 2 },
   { label: 'High', value: () => 3 },
   { label: 'Extremely high', value: () => 4 },
-  { label: 'Random', value: () => Math.round(Math.random() * 4) },
+  { label: 'Random', random: (r) => Math.round(r() * 4) },
 ];
 
 const TACTICS_OPTIONS = [
@@ -44,7 +46,7 @@ const TACTICS_OPTIONS = [
   { label: 'Balanced', value: () => 1 },
   { label: 'Possession', value: () => 1.2 },
   { label: 'Attacking', value: () => 1.4 },
-  { label: 'Random', value: () => Math.random() * 0.8 + 0.6 },
+  { label: 'Random', random: (r) => r() * 0.8 + 0.6 },
 ];
 
 const DEFAULT_LOGO = 'img/fantasy_team.png';
@@ -131,10 +133,11 @@ function recommendStrength() {
     : 'none';
 }
 
-function pickVenue(team) {
+function pickVenue(team, rand) {
   if (!team || !team.venues) return null;
   const v = team.venues;
-  return Array.isArray(v) ? v[Math.floor(Math.random() * v.length)] : v;
+  if (!Array.isArray(v)) return v;
+  return v[Math.floor((rand ? rand() : Math.random()) * v.length)];
 }
 
 function teamLogo(team) {
@@ -145,11 +148,30 @@ function teamLogo(team) {
 /* ------------------------------------------------------------------ */
 /* Build config & start the match                                      */
 /* ------------------------------------------------------------------ */
-function readOption(selectId, options) {
-  return options[$(selectId).selectedIndex].value();
+function readOption(selectId, options, rand) {
+  // 'Random' options (last entry) draw from the seeded generator, not Math.random
+  const idx = $(selectId).selectedIndex;
+  const opt = options[idx];
+  return opt.random ? opt.random(rand) : opt.value();
 }
 
 function proceedToMatch() {
+  // One seed fixes the whole match: setup choices and simulation.
+  // A seed typed into the form replays an earlier match exactly.
+  const typedSeed = $('#seedInput').value.trim();
+  let seed;
+  if (typedSeed === '') {
+    seed = newSeed();
+  } else {
+    seed = parseSeed(typedSeed);
+    if (seed === null) {
+      alert('Seed must be a whole number from 0 to 4294967295');
+      return;
+    }
+  }
+  const rand = mulberry32(seed);
+  app.seed = seed;
+
   const homeName = $('#homeTeam').value.trim();
   const awayName = $('#awayTeam').value.trim();
   if (homeName === '' || awayName === '') {
@@ -171,17 +193,20 @@ function proceedToMatch() {
   const config = {
     homeStrength: bucket.home,
     awayStrength: bucket.away,
-    homeCrowdSupport: CROWD_OPTIONS[crowdIdx].value(),
-    homeMorale: readOption('#homeMorale', MORALE_OPTIONS),
-    awayMorale: readOption('#awayMorale', MORALE_OPTIONS),
-    homeTactics: readOption('#homeTactics', TACTICS_OPTIONS),
-    awayTactics: readOption('#awayTactics', TACTICS_OPTIONS),
+    homeCrowdSupport: CROWD_OPTIONS[crowdIdx].random
+      ? CROWD_OPTIONS[crowdIdx].random(rand)
+      : CROWD_OPTIONS[crowdIdx].value(),
+    homeMorale: readOption('#homeMorale', MORALE_OPTIONS, rand),
+    awayMorale: readOption('#awayMorale', MORALE_OPTIONS, rand),
+    homeTactics: readOption('#homeTactics', TACTICS_OPTIONS, rand),
+    awayTactics: readOption('#awayTactics', TACTICS_OPTIONS, rand),
     isSecondLeg,
     homeFirstLegGoals: isSecondLeg ? Number(homeLeg1) : 0,
     awayFirstLegGoals: isSecondLeg ? Number(awayLeg1) : 0,
   };
 
-  app.engine = createMatchEngine(config);
+  // the engine draws the rest of its randomness from the same seeded stream
+  app.engine = createMatchEngine(config, rand);
 
   // scoreboard header
   $('#sbHomeName').textContent = homeName.toUpperCase();
@@ -189,8 +214,9 @@ function proceedToMatch() {
   $('#sbHomeLogo').src = teamLogo(app.home);
   $('#sbAwayLogo').src = teamLogo(app.away);
   $('#sbTournament').textContent = app.tournament;
-  const venue = neutralVenue ? 'Neutral venue' : pickVenue(app.home);
+  const venue = neutralVenue ? 'Neutral venue' : pickVenue(app.home, rand);
   $('#sbVenue').textContent = venue || '';
+  $('#sbSeed').textContent = `Seed ${seed}`;
 
   // swap views
   $('#settingsView').style.display = 'none';

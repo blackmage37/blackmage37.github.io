@@ -8,6 +8,98 @@
  */
 'use strict';
 
+/* Tunable limits (candidates for the options page, roadmap item 3). */
+const MORALE_LIMITS = { MIN: 0, MAX: 10, DECAY: 0.02 }; // DECAY: fraction of gap to setup value per minute
+const STRENGTH_SHARE_LIMITS = { MIN: 5, MAX: 95 }; // keeps extreme ratios from becoming degenerate
+const BASE_SHOTS_PER_MATCH = 24; // total shot volume at balanced tactics (1 vs 1)
+
+/* Goal-rate presets (user-facing option). Each was measured on fresh seeds
+ * against the locked bands: favourite 63–68%, underdog 13–17% in a 70/30 match.
+ * balancedGoals = average total goals in a 50/50 match at neutral settings.
+ * See ROADMAP item 5 and docs.html for the measurements behind these values. */
+const GOAL_RATE_PRESETS = {
+  low: { goalDivisor: 1.4, goalChanceFloor: 0.2, balancedGoals: 2.18 },
+  medium: { goalDivisor: 1.2, goalChanceFloor: 0.25, balancedGoals: 2.46 },
+  high: { goalDivisor: 1.0, goalChanceFloor: 0.3, balancedGoals: 2.85 },
+};
+
+/* Experimental switches for the strength-conversion comparison (see ROADMAP).
+ *   conversionUsesStrength: false = option A (goal chance ignores strength share)
+ *   volumeMapping: 'linear' (current) | 'sqrt' = option B (softened shot share)
+ * Defaults reproduce the current behaviour. */
+const EXPERIMENT = {
+  conversionUsesStrength: true,
+  volumeMapping: 'sqrt', // option B, adopted as default
+  conversionExponent: 1, // 1 = linear (current); 0.5 = sqrt (option D); see conversionStrength
+  accuracyExponent: 0, // lever 1: 0 = accuracy ignores strength (current); >0 stronger sides convert better on target
+
+};
+
+/**
+ * Convert any pair of positive strengths into shares that sum to 100.
+ * 10.93 / 7.31 and 109.3 / 73.1 give the same result, so the scale of the
+ * input no longer matters, only the ratio between the two teams.
+ */
+function normaliseStrength(home, away) {
+  const h = Number(home);
+  const a = Number(away);
+  if (!Number.isFinite(h) || !Number.isFinite(a) || h <= 0 || a <= 0) {
+    throw new RangeError(`strengths must be positive numbers (got ${home} / ${away})`);
+  }
+  const raw = (h / (h + a)) * 100;
+  const share = Math.min(STRENGTH_SHARE_LIMITS.MAX, Math.max(STRENGTH_SHARE_LIMITS.MIN, raw));
+  return { home: share, away: 100 - share };
+}
+
+/**
+ * Share of total shot volume for a team with the given strength share (0-100).
+ * linear: s / 100 (current). sqrt: normalised sqrt, which softens the gap.
+ * The two shares still sum to 1 for any pair.
+ */
+function shotShare(strengthShare) {
+  if (EXPERIMENT.volumeMapping === 'sqrt') {
+    return Math.sqrt(strengthShare) / (Math.sqrt(strengthShare) + Math.sqrt(100 - strengthShare));
+  }
+  return strengthShare / 100;
+}
+
+/**
+ * Strength term used in the goal-chance formula, on the same 0-100 scale.
+ * linear: s (current). sqrt: 50 * sqrt(s / 50), which keeps 50 -> 50 (so
+ * balanced matches are unchanged) but compresses the gap between teams.
+ */
+function conversionStrength(strengthShare) {
+  // power-law compression around 50: p = 1 is linear, p = 0.5 is sqrt
+  return 50 * Math.pow(strengthShare / 50, EXPERIMENT.conversionExponent);
+}
+
+/**
+ * Per-match shot-on-target accuracy for one side (lever 1).
+ * base is the random 0.1–0.5 draw; with accuracyExponent 0 it is unchanged.
+ */
+function accuracyFor(strengthShare, base) {
+  const scaled = base * Math.pow(strengthShare / 50, EXPERIMENT.accuracyExponent);
+  return Math.min(0.8, Math.max(0.05, scaled));
+}
+
+/**
+ * Shared seeded setup. Returns the pre-match choices that the UI would
+ * otherwise make with Math.random (crowd, morale and tactics "random" options,
+ * and the venue), using the supplied generator so a seed fixes them too.
+ */
+function drawSetupChoices(rand, venues) {
+  return {
+    crowdRandom: Math.round(rand() * 8),
+    moraleRandom: Math.round(rand() * 4),
+    tacticsRandom: rand() * 0.8 + 0.6,
+    venueIndex: venues && venues.length ? Math.floor(rand() * venues.length) : 0,
+  };
+}
+
+function clampMorale(value) {
+  return Math.min(MORALE_LIMITS.MAX, Math.max(MORALE_LIMITS.MIN, value));
+}
+
 const MATCH_STATUS = {
   NOT_STARTED: 'Not started',
   FIRST_HALF: '1st half',
@@ -57,6 +149,8 @@ function makeStartingLineup() {
  * @param {function} [rng] 0..1 random source (defaults to Math.random)
  */
 function createMatchEngine(config, rng) {
+  // Every random draw comes from this one source. Pass a seeded rng (see rng.js)
+  // for reproducible matches; Math.random is only the fallback for ad-hoc use.
   const rand = rng || Math.random;
 
   const cfg = Object.assign(
@@ -71,24 +165,35 @@ function createMatchEngine(config, rng) {
       isSecondLeg: false,
       homeFirstLegGoals: 0,
       awayFirstLegGoals: 0,
+      goalRate: 'medium', // 'low' | 'medium' | 'high' (see GOAL_RATE_PRESETS); default chosen in conversation
     },
     config
   );
+
+  // goal-rate preset: sets the per-match divisor and floor (see GOAL_RATE_PRESETS)
+  if (!Object.prototype.hasOwnProperty.call(GOAL_RATE_PRESETS, cfg.goalRate)) {
+    throw new RangeError(
+      `unknown goalRate "${cfg.goalRate}" (expected one of: ${Object.keys(GOAL_RATE_PRESETS).join(', ')})`
+    );
+  }
+  cfg.goalDivisor = GOAL_RATE_PRESETS[cfg.goalRate].goalDivisor;
+  cfg.goalChanceFloor = GOAL_RATE_PRESETS[cfg.goalRate].goalChanceFloor;
+
+  // ratio-based strengths and bounded morale (see ROADMAP items 4 and 5)
+  const shares = normaliseStrength(cfg.homeStrength, cfg.awayStrength);
+  cfg.homeStrength = shares.home;
+  cfg.awayStrength = shares.away;
+  cfg.homeMorale = clampMorale(cfg.homeMorale);
+  cfg.awayMorale = clampMorale(cfg.awayMorale);
 
   /* ---- pre-match derived numbers (same formulas as the original) ---- */
   const allPotentialFouls = Math.round(20 + rand() * 7);
   const h = cfg.homeTactics;
   const a = cfg.awayTactics;
-  let allPotentialShots;
-  if (h > a) {
-    allPotentialShots = (24 * (a + h)) / (3 * a);
-  } else if (h < a) {
-    allPotentialShots = (24 * (h + a)) / (4 * h);
-  } else if (h >= 1) {
-    allPotentialShots = (24 * (a + h)) / (2 * a); // both attacking: open game
-  } else {
-    allPotentialShots = (24 * (a + h)) / (4 * a); // both defensive: closed game
-  }
+  // Continuous and symmetric: total match shot volume scales with the average
+  // tactics value. 24 shots at balanced tactics (1 vs 1), 14.4 at 0.6 vs 0.6,
+  // 33.6 at 1.4 vs 1.4. Swapping home and away leaves the result unchanged.
+  const allPotentialShots = (BASE_SHOTS_PER_MATCH * (h + a)) / 2;
 
   const state = {
     status: MATCH_STATUS.NOT_STARTED,
@@ -105,19 +210,17 @@ function createMatchEngine(config, rng) {
 
     // derived potentials
     allPotentialShots,
-    homePotentialShots: Math.round(
-      allPotentialShots *
-        ((cfg.homeStrength + cfg.homeMorale + cfg.homeCrowdSupport) / 100)
-    ),
-    awayPotentialShots: Math.round(
-      allPotentialShots * ((cfg.awayStrength + cfg.awayMorale) / 100)
-    ),
-    homePotentialFouls: Math.round(allPotentialFouls * (cfg.awayStrength / 100)),
-    awayPotentialFouls: Math.round(allPotentialFouls * (cfg.homeStrength / 100)),
+    // Unrounded potentials (step C): the per-minute roll is potential / 90, so
+    // fractional values keep the expected volume exact. Shares sum to 100 by
+    // construction because they are derived from the normalised strengths.
+    homePotentialShots: allPotentialShots * shotShare(cfg.homeStrength),
+    awayPotentialShots: allPotentialShots * shotShare(cfg.awayStrength),
+    homePotentialFouls: allPotentialFouls * (cfg.awayStrength / 100),
+    awayPotentialFouls: allPotentialFouls * (cfg.homeStrength / 100),
 
     // per-match shot accuracy constants (as in the original: 0.1..0.5)
-    shotOnGoalChanceHome: rand() * 0.4 + 0.1,
-    shotOnGoalChanceAway: rand() * 0.4 + 0.1,
+    shotOnGoalChanceHome: accuracyFor(cfg.homeStrength, rand() * 0.4 + 0.1),
+    shotOnGoalChanceAway: accuracyFor(cfg.awayStrength, rand() * 0.4 + 0.1),
 
     // stats
     homeGoals: 0,
@@ -172,15 +275,31 @@ function createMatchEngine(config, rng) {
 
     if (rand() < (state.homeStrength + adjuster) / 100) {
       state.homePossession += step;
-      state.homeMorale += moraleShift;
-      state.awayMorale -= moraleShift;
+      addMorale('home', moraleShift);
+      addMorale('away', -moraleShift);
     } else {
       state.awayPossession += step;
-      state.awayMorale += moraleShift;
-      state.homeMorale -= moraleShift;
+      addMorale('away', moraleShift);
+      addMorale('home', -moraleShift);
     }
     state.homePossession = Math.min(85, Math.max(15, state.homePossession));
     state.awayPossession = 100 - state.homePossession;
+  }
+
+  /** All morale writes go through here so the bounds always apply. */
+  function addMorale(side, delta) {
+    if (side === 'home') state.homeMorale = clampMorale(state.homeMorale + delta);
+    else state.awayMorale = clampMorale(state.awayMorale + delta);
+  }
+
+  /** Pull morale a small fraction of the way back to its setup value. */
+  function decayMorale() {
+    state.homeMorale = clampMorale(
+      state.homeMorale + (cfg.homeMorale - state.homeMorale) * MORALE_LIMITS.DECAY
+    );
+    state.awayMorale = clampMorale(
+      state.awayMorale + (cfg.awayMorale - state.awayMorale) * MORALE_LIMITS.DECAY
+    );
   }
 
   function randomPlayer(lineup) {
@@ -205,13 +324,13 @@ function createMatchEngine(config, rng) {
       state.homeRedCards++;
       state.homeRedEvents.push({ name: player.name, minute: state.minute });
       state.homeStrength -= state.homeStrength * 0.09;
-      state.homeMorale += (rand() > 0.5 ? -1 : 1) * state.homeMorale * 0.15;
+      addMorale('home', (rand() > 0.5 ? -1 : 1) * state.homeMorale * 0.15);
     } else {
       state.awayRedCards++;
       state.awayRedEvents.push({ name: player.name, minute: state.minute });
       state.awayStrength -= state.awayStrength * 0.09;
       // FIX: now symmetric with the home side (was -25%/+5%)
-      state.awayMorale += (rand() > 0.5 ? -1 : 1) * state.awayMorale * 0.15;
+      addMorale('away', (rand() > 0.5 ? -1 : 1) * state.awayMorale * 0.15);
     }
   }
 
@@ -253,16 +372,27 @@ function createMatchEngine(config, rng) {
 
     if (isHome) {
       state.homeShotsOnGoal++;
-      state.homeMorale += 0.2;
+      addMorale('home', 0.2);
     } else {
       state.awayShotsOnGoal++;
-      state.awayMorale += 0.2;
+      addMorale('away', 0.2);
     }
 
-    const power = isHome
-      ? state.homeStrength + state.homeMorale + cfg.homeCrowdSupport
-      : state.awayStrength + state.awayMorale;
-    const goalChance = power / 100 / (1.5 + rand());
+    // Goal chance is driven by the team's share of strength, plus morale and
+    // crowd as bounded adjustments (morale is already clamped to 0..10).
+    const power = EXPERIMENT.conversionUsesStrength
+      ? isHome
+        ? conversionStrength(state.homeStrength) + state.homeMorale + cfg.homeCrowdSupport
+        : conversionStrength(state.awayStrength) + state.awayMorale
+      : isHome
+        ? state.homeMorale + cfg.homeCrowdSupport
+        : state.awayMorale;
+    // Lever 3: a floor applies the same minimum to both sides, so it cannot
+    // favour either team by construction.
+    const goalChance = Math.max(
+      cfg.goalChanceFloor,
+      power / 100 / (cfg.goalDivisor + rand())
+    );
     if (rand() >= goalChance) return;
 
     // GOAL
@@ -270,11 +400,11 @@ function createMatchEngine(config, rng) {
     scorer.goalsToday++;
     if (isHome) {
       state.homeGoals++;
-      state.homeMorale++;
+      addMorale('home', 1);
       state.homeGoalEvents.push({ name: scorer.name, minute: state.minute });
     } else {
       state.awayGoals++;
-      state.awayMorale++;
+      addMorale('away', 1);
       state.awayGoalEvents.push({ name: scorer.name, minute: state.minute });
     }
   }
@@ -333,6 +463,7 @@ function createMatchEngine(config, rng) {
     state.minute++;
 
     adjustPossession();
+    decayMorale();
     simulateFouls('home');
     simulateFouls('away');
     // FIX: both sides roll shots independently each minute (original only let
@@ -388,5 +519,19 @@ function createMatchEngine(config, rng) {
 
 /* Export for Node (unit tests) without breaking the browser. */
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createMatchEngine, MATCH_STATUS, makeStartingLineup };
+  module.exports = {
+  EXPERIMENT,
+  GOAL_RATE_PRESETS,
+  drawSetupChoices,
+  shotShare,
+  conversionStrength,
+  accuracyFor,
+  createMatchEngine,
+  MATCH_STATUS,
+  makeStartingLineup,
+  normaliseStrength,
+  clampMorale,
+  MORALE_LIMITS,
+  STRENGTH_SHARE_LIMITS,
+};
 }

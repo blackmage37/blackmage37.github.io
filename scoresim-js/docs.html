@@ -61,11 +61,11 @@ img/            Fallback team logo</pre>
   <h3>Pre-match</h3>
   <ul>
     <li><code>allPotentialFouls = 20 + rand*7</code>, split inversely by opponent strength.</li>
-    <li><code>allPotentialShots</code> from both tactics values: attack-vs-defence
-        <code>24(h+a)/3a</code>; both attacking <code>24(h+a)/2a</code> (open game);
-        both defensive <code>24(h+a)/4a</code> (closed game).</li>
-    <li>Each side's shot share: <code>allShots × (strength + morale [+ crowd]) / 100</code>.</li>
-    <li>Per-match shot accuracy constant per team: uniform 0.1–0.5.</li>
+    <li><code>allPotentialShots = 24 × (home tactics + away tactics) / 2</code>. Continuous and
+        symmetric; 24 shots at balanced tactics.</li>
+    <li>Each side's shot share is <code>strength / 100</code> applied to the square root
+        scale: shares are <code>√s / (√s_home + √s_away)</code>, which softens the gap between teams.</li>
+    <li>Per-match shot accuracy constant per team: uniform 0.1–0.5 (not scaled by strength; lever 1 is off).</li>
   </ul>
   <h3>Each simulated minute (tick)</h3>
   <ol>
@@ -76,9 +76,10 @@ img/            Fallback team logo</pre>
         1/7 chance of a yellow to a random player (second yellow ⇒ red, player removed,
         strength −9%, morale ±15% coin flip); otherwise 1/500 chance of a straight red.</li>
     <li><strong>Shots</strong> (each side, independently): probability <code>potentialShots/90</code>;
-        on-target per the accuracy constant (+0.2 morale); goal with chance
-        <code>(strength+morale[+crowd])/100 / (1.5+rand)</code>. Scorer is a random
-        <em>outfield</em> player; +1 morale on scoring.</li>
+        on-target per the accuracy constant (+0.2 morale); goal chance is
+        <code>max(0.20, (conv(strength)+morale[+crowd])/100 / (1.4+rand))</code>, where
+        <code>conv(s) = 50·(s/50)^p</code> with p = 1 (linear). The 0.20 floor applies to both
+        sides equally. Scorer is a random <em>outfield</em> player; +1 morale on scoring.</li>
     <li><strong>Clock</strong>: injury time 0–5 min rolled at 44' and 89'; 5-tick half-time break;
         at FT, two-leg ties level on aggregate go to extra time, then a penalty shootout
         (random 0–5 each, sudden death until decided).</li>
