@@ -127,6 +127,11 @@ Real-world reference (top-flight football): about 2.6–2.8 goals per match, so 
 - Engine effects: the substitute replaces a player in the lineup, a substitute's goal weight applies once they are on, and the event is logged for the UI.
 - Open questions: maximum number of substitutions, whether injuries are modelled, and whether bench quality should depend on squad depth.
 
+### 7a. 🔲 Sample team rosters (test data)
+- Owner to supply rosters for the sample teams in `data/sample-teams.js` (currently strength and group only).
+- Each roster: 11 starters and substitutes, with name and position (GK, DF, MF, FW), and optionally a goalscoring weight per player (item 8).
+- Once supplied, the sample file gains `players` arrays and the engine uses them instead of the generic squad. Rosters are needed before substitution logic (item 7) and goalscorer weighting (item 8) can be tested with real names.
+
 ### 8. 🔲 Goalscorer weighting as a player property
 - Add a `goalWeight` (or `scoringShare`) field to each player. The current behaviour is equivalent to every outfield player having weight 1.
 - Scorer selection becomes a weighted random draw over the players on the pitch. Goalkeepers default to weight 0 but can be configured.

@@ -16,13 +16,24 @@
   <main id="settingsView" class="container">
     <section class="settingsMain">
       <div class="field">
-        <label for="tournament">Tournament</label>
-        <select id="tournament"></select>
+        <label for="teamSource">Team source</label>
+        <select id="teamSource">
+          <option value="clubs">Clubs (UEFA database)</option>
+          <option value="nations">Nations (UEFA database)</option>
+          <option value="samples">Sample teams (test set)</option>
+          <option value="custom">Custom teams</option>
+        </select>
       </div>
       <div class="field teams">
         <input id="homeTeam" type="text" list="teamList" placeholder="Choose home team" />
         <input id="awayTeam" type="text" list="teamList" placeholder="Choose away team" />
         <datalist id="teamList"></datalist>
+      </div>
+      <div id="customTeams" class="field teams" style="display: none;">
+        <input id="customHomeName" type="text" placeholder="Home team name" maxlength="40" />
+        <input id="customHomeStrength" type="number" min="0.01" step="any" placeholder="Home strength (any positive number)" />
+        <input id="customAwayName" type="text" placeholder="Away team name" maxlength="40" />
+        <input id="customAwayStrength" type="number" min="0.01" step="any" placeholder="Away strength (any positive number)" />
       </div>
       <div class="field secondLeg">
         <label><input type="checkbox" id="isSecondLeg" /> 2nd leg of Home &amp; Away match?</label>
@@ -65,7 +76,7 @@
   <!-- ============ MATCH VIEW ============ -->
   <main id="matchView" class="scoreboard" style="display: none;">
     <div class="metaRow">
-      <div id="sbTournament"></div>
+      <div id="sbSource"></div>
       <div id="sbVenue"></div>
       <div id="sbSeed" class="seed"></div>
     </div>
@@ -105,6 +116,7 @@
 
   <script src="data/clubs.js"></script>
   <script src="data/nations.js"></script>
+  <script src="data/sample-teams.js"></script>
   <script src="js/strength.js"></script>
   <script src="js/rng.js"></script>
   <script src="js/engine.js"></script>

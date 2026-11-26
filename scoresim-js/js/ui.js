@@ -8,16 +8,24 @@
 /* ------------------------------------------------------------------ */
 /* Static option data (from the original matchsettings component)      */
 /* ------------------------------------------------------------------ */
-const TOURNAMENTS = [
-  { name: 'UEFA Champions League', teams: 'clubs' },
-  { name: 'UEFA Europa League', teams: 'clubs' },
-  { name: 'UEFA Europa Conference League', teams: 'clubs' },
-  { name: 'UEFA European Championship', teams: 'nations' },
-  { name: 'UEFA Euro qualifiers', teams: 'nations' },
-  { name: 'UEFA friendly (clubs)', teams: 'clubs' },
-  { name: 'International friendly (UEFA nations)', teams: 'nations' },
-  { name: 'UEFA World Cup qualifiers', teams: 'nations' },
-];
+// Team source: which list the team inputs draw from. Competition names no
+// longer affect the simulation, so they are not part of the settings.
+const TEAM_SOURCES = {
+  clubs: { label: 'Clubs (UEFA database)', kind: 'clubs' },
+  nations: { label: 'Nations (UEFA database)', kind: 'nations' },
+  samples: { label: 'Sample teams (test set)', kind: 'samples' },
+  custom: { label: 'Custom teams', kind: 'custom' },
+};
+
+/** Display name for a team from any of the three sources. */
+function teamName(team) {
+  return team.club_name || team.nation_name || team.name;
+}
+
+/** Sources where strengths are typed or given directly (not derived from a database). */
+function usesDirectStrength(kind) {
+  return kind === 'custom' || kind === 'samples';
+}
 
 // Each option has value() for fixed settings and random(rand) for the
 // "Random" entry, which draws from the match's seeded generator.
@@ -56,9 +64,9 @@ const MS_PER_MINUTE = 150; // simulation speed: 1 match minute each 150ms
 /* App state                                                           */
 /* ------------------------------------------------------------------ */
 const app = {
-  teams: [], // active pool (clubs or nations) for the chosen tournament
+  teams: [], // active pool (clubs or nations) for the chosen source
   teamKind: 'clubs',
-  tournament: TOURNAMENTS[0].name,
+  source: 'clubs', // key into TEAM_SOURCES
   home: null, // selected team objects (or null for free-typed names)
   away: null,
   strength: { home: 50, away: 50, bucket: 3 },
@@ -76,28 +84,71 @@ function fillSelect(sel, labels) {
   sel.innerHTML = labels.map((l) => `<option>${l}</option>`).join('');
 }
 
-function loadTeamsForTournament() {
-  const t = TOURNAMENTS.find((x) => x.name === app.tournament);
-  app.teamKind = t.teams;
-  app.teams = t.teams === 'clubs' ? UEFA_CLUBS : UEFA_NATIONS;
-  const list = $('#teamList');
-  list.innerHTML = app.teams
-    .map((team) => `<option value="${team.club_name || team.nation_name}">`)
-    .join('');
+function applyTeamSource() {
+  const src = TEAM_SOURCES[app.source];
+  app.teamKind = src.kind;
+  const isCustom = src.kind === 'custom';
+  const isSamples = src.kind === 'samples';
+  $('#customTeams').style.display = isCustom ? 'flex' : 'none';
+  $('#homeTeam').style.display = isCustom ? 'none' : '';
+  $('#awayTeam').style.display = isCustom ? 'none' : '';
+  $('#strengthRecommended').style.display = 'none';
+  $('#relativeStrength').disabled = usesDirectStrength(src.kind);
+  if (isCustom) {
+    app.teams = [];
+    $('#teamList').innerHTML = '';
+  } else {
+    app.teams = isSamples
+      ? SAMPLE_TEAMS
+      : src.kind === 'clubs' ? UEFA_CLUBS : UEFA_NATIONS;
+    $('#teamList').innerHTML = app.teams
+      .map((team) => `<option value="${teamName(team)}">`)
+      .join('');
+  }
   app.home = null;
   app.away = null;
   $('#homeTeam').value = '';
   $('#awayTeam').value = '';
 }
 
+/**
+ * Read and validate the custom team inputs. Strengths are any positive
+ * numbers; the engine normalises them into shares, so no bucket is used.
+ * Returns { error } or { home, away } with names and strengths.
+ */
+function readCustomTeams() {
+  const homeName = $('#customHomeName').value.trim();
+  const awayName = $('#customAwayName').value.trim();
+  const homeRaw = $('#customHomeStrength').value;
+  const awayRaw = $('#customAwayStrength').value;
+  if (homeName === '' || awayName === '') {
+    return { error: 'Please enter both custom team names' };
+  }
+  if (homeName.toLowerCase() === awayName.toLowerCase()) {
+    return { error: 'Home and away teams need different names' };
+  }
+  const home = Number(homeRaw);
+  const away = Number(awayRaw);
+  if (homeRaw === '' || awayRaw === '' || !Number.isFinite(home) || !Number.isFinite(away)) {
+    return { error: 'Please enter a strength for both teams' };
+  }
+  if (home <= 0 || away <= 0) {
+    return { error: 'Strengths must be greater than zero' };
+  }
+  return { home: { name: homeName, strength: home }, away: { name: awayName, strength: away } };
+}
+
 function findTeam(name) {
-  return (
-    app.teams.find((t) => (t.club_name || t.nation_name) === name) || null
-  );
+  return app.teams.find((t) => teamName(t) === name) || null;
 }
 
 function recommendStrength() {
   app.strengthIsRecommended = false;
+  if (usesDirectStrength(app.teamKind)) {
+    // strengths come from the team entries (samples) or the custom inputs
+    $('#strengthRecommended').style.display = 'none';
+    return;
+  }
   if (app.home && app.away) {
     if (app.teamKind === 'clubs') {
       if (
@@ -156,6 +207,41 @@ function readOption(selectId, options, rand) {
 }
 
 function proceedToMatch() {
+  const isCustom = app.teamKind === 'custom';
+  const isSamples = app.teamKind === 'samples';
+  let homeName, awayName, customShares = null;
+  if (isCustom) {
+    const c = readCustomTeams();
+    if (c.error) {
+      alert(c.error);
+      return;
+    }
+    homeName = c.home.name;
+    awayName = c.away.name;
+    customShares = normaliseStrength(c.home.strength, c.away.strength);
+  } else if (isSamples) {
+    homeName = $('#homeTeam').value.trim();
+    awayName = $('#awayTeam').value.trim();
+    const h = findTeam(homeName);
+    const a = findTeam(awayName);
+    if (!h || !a) {
+      alert('Pick both teams from the sample list');
+      return;
+    }
+    if (h === a) {
+      alert('Home and away teams must be different');
+      return;
+    }
+    homeName = teamName(h);
+    awayName = teamName(a);
+    app.home = h;
+    app.away = a;
+    customShares = normaliseStrength(h.strength, a.strength);
+  } else {
+    homeName = $('#homeTeam').value.trim();
+    awayName = $('#awayTeam').value.trim();
+  }
+
   // One seed fixes the whole match: setup choices and simulation.
   // A seed typed into the form replays an earlier match exactly.
   const typedSeed = $('#seedInput').value.trim();
@@ -172,9 +258,7 @@ function proceedToMatch() {
   const rand = mulberry32(seed);
   app.seed = seed;
 
-  const homeName = $('#homeTeam').value.trim();
-  const awayName = $('#awayTeam').value.trim();
-  if (homeName === '' || awayName === '') {
+  if (!isCustom && (homeName === '' || awayName === '')) {
     alert('Please enter team names');
     return;
   }
@@ -186,13 +270,15 @@ function proceedToMatch() {
     return;
   }
 
+  // custom and sample teams pass their own strengths; database play uses the dropdown
   const bucket = STRENGTH_BUCKETS[$('#relativeStrength').selectedIndex];
   const crowdIdx = $('#crowdSupport').selectedIndex;
   const neutralVenue = crowdIdx === 5;
+  const directShares = usesDirectStrength(app.teamKind) ? customShares : null;
 
   const config = {
-    homeStrength: bucket.home,
-    awayStrength: bucket.away,
+    homeStrength: directShares ? directShares.home : bucket.home,
+    awayStrength: directShares ? directShares.away : bucket.away,
     homeCrowdSupport: CROWD_OPTIONS[crowdIdx].random
       ? CROWD_OPTIONS[crowdIdx].random(rand)
       : CROWD_OPTIONS[crowdIdx].value(),
@@ -213,8 +299,11 @@ function proceedToMatch() {
   $('#sbAwayName').textContent = awayName.toUpperCase();
   $('#sbHomeLogo').src = teamLogo(app.home);
   $('#sbAwayLogo').src = teamLogo(app.away);
-  $('#sbTournament').textContent = app.tournament;
-  const venue = neutralVenue ? 'Neutral venue' : pickVenue(app.home, rand);
+  $('#sbSource').textContent = TEAM_SOURCES[app.source].label;
+  // sample and custom teams have no venue list, so only the neutral option applies
+  const venue = neutralVenue
+    ? 'Neutral venue'
+    : directShares ? null : pickVenue(app.home, rand);
   $('#sbVenue').textContent = venue || '';
   $('#sbSeed').textContent = `Seed ${seed}`;
 
@@ -291,7 +380,8 @@ function render() {
 /* Init                                                                */
 /* ------------------------------------------------------------------ */
 function init() {
-  fillSelect($('#tournament'), TOURNAMENTS.map((t) => t.name));
+  fillSelect($('#teamSource'), Object.values(TEAM_SOURCES).map((t) => t.label));
+  $('#teamSource').selectedIndex = 0;
   fillSelect($('#relativeStrength'), STRENGTH_LABELS);
   fillSelect($('#crowdSupport'), CROWD_OPTIONS.map((o) => o.label));
   fillSelect($('#homeMorale'), MORALE_OPTIONS.map((o) => o.label));
@@ -305,11 +395,11 @@ function init() {
   $('#homeTactics').selectedIndex = 5;
   $('#awayTactics').selectedIndex = 5;
 
-  loadTeamsForTournament();
+  applyTeamSource();
 
-  $('#tournament').addEventListener('change', (e) => {
-    app.tournament = e.target.value;
-    loadTeamsForTournament();
+  $('#teamSource').addEventListener('change', (e) => {
+    app.source = Object.keys(TEAM_SOURCES)[e.target.selectedIndex];
+    applyTeamSource();
     recommendStrength();
   });
   $('#homeTeam').addEventListener('change', (e) => {
