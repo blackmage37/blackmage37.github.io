@@ -61,6 +61,14 @@ input, select {
 }
 .metaRow { display: flex; gap: 2em; opacity: 0.85; font-size: 0.95em; }
 .seed { font-family: Consolas, monospace; color: #9fd3ff; }
+
+/* custom teams: one column per team, strength beneath the name */
+.field.customTeams { flex-direction: row; gap: 1em; }
+.customTeam { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.5em; }
+.customTeam input { width: 100%; min-width: 0; }
+
+/* read-only split shown in place of the strength dropdown for sample/custom teams */
+.directStrengthNote { font-size: 0.9em; color: #ffd867; padding: 0.5em 0; line-height: 1.4; }
 .mainRow { display: flex; align-items: center; gap: 1.5em; }
 .teamZone { display: flex; align-items: center; gap: 0.75em; }
 .teamName { font-size: 1.4em; font-weight: 600; letter-spacing: 0.04em; }

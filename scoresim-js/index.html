@@ -29,11 +29,15 @@
         <input id="awayTeam" type="text" list="teamList" placeholder="Choose away team" />
         <datalist id="teamList"></datalist>
       </div>
-      <div id="customTeams" class="field teams" style="display: none;">
-        <input id="customHomeName" type="text" placeholder="Home team name" maxlength="40" />
-        <input id="customHomeStrength" type="number" min="0.01" step="any" placeholder="Home strength (any positive number)" />
-        <input id="customAwayName" type="text" placeholder="Away team name" maxlength="40" />
-        <input id="customAwayStrength" type="number" min="0.01" step="any" placeholder="Away strength (any positive number)" />
+      <div id="customTeams" class="field customTeams" style="display: none;">
+        <div class="customTeam">
+          <input id="customHomeName" type="text" placeholder="Home team name" maxlength="40" />
+          <input id="customHomeStrength" type="number" min="0.01" step="any" placeholder="Home strength" />
+        </div>
+        <div class="customTeam">
+          <input id="customAwayName" type="text" placeholder="Away team name" maxlength="40" />
+          <input id="customAwayStrength" type="number" min="0.01" step="any" placeholder="Away strength" />
+        </div>
       </div>
       <div class="field secondLeg">
         <label><input type="checkbox" id="isSecondLeg" /> 2nd leg of Home &amp; Away match?</label>
@@ -46,6 +50,7 @@
         <label for="relativeStrength">Relative strength
           <span id="strengthRecommended" style="display:none;">(recommended)</span></label>
         <select id="relativeStrength"></select>
+        <div id="directStrengthNote" class="directStrengthNote" style="display: none;"></div>
       </div>
       <div class="field">
         <label for="crowdSupport">Home crowd support</label>

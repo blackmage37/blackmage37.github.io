@@ -109,6 +109,7 @@ function applyTeamSource() {
   app.away = null;
   $('#homeTeam').value = '';
   $('#awayTeam').value = '';
+  updateStrengthDisplay();
 }
 
 /**
@@ -147,6 +148,7 @@ function recommendStrength() {
   if (usesDirectStrength(app.teamKind)) {
     // strengths come from the team entries (samples) or the custom inputs
     $('#strengthRecommended').style.display = 'none';
+    updateStrengthDisplay();
     return;
   }
   if (app.home && app.away) {
@@ -182,6 +184,46 @@ function recommendStrength() {
   $('#strengthRecommended').style.display = app.strengthIsRecommended
     ? 'inline'
     : 'none';
+}
+
+/**
+ * Relative strength display. Database play shows the bucket dropdown.
+ * Sample and custom play take the split from the team strengths, so the
+ * dropdown is hidden and the real split (what the engine uses) is shown.
+ */
+function updateStrengthDisplay() {
+  const direct = usesDirectStrength(app.teamKind);
+  $('#relativeStrength').style.display = direct ? 'none' : '';
+  const note = $('#directStrengthNote');
+  note.style.display = direct ? 'block' : 'none';
+  if (direct) note.textContent = directStrengthText();
+}
+
+/** The two teams and strengths for the current direct-strength mode, or a message. */
+function currentDirectTeams() {
+  if (app.teamKind === 'custom') {
+    const c = readCustomTeams();
+    if (c.error) return { ok: false, message: 'Enter both custom teams and strengths to see the split.' };
+    return { ok: true, home: c.home, away: c.away };
+  }
+  const h = findTeam($('#homeTeam').value.trim());
+  const a = findTeam($('#awayTeam').value.trim());
+  if (!h || !a || h === a) {
+    return { ok: false, message: 'Choose two different teams from the sample list to see the split.' };
+  }
+  return {
+    ok: true,
+    home: { name: teamName(h), strength: h.strength },
+    away: { name: teamName(a), strength: a.strength },
+  };
+}
+
+function directStrengthText() {
+  const pair = currentDirectTeams();
+  if (!pair.ok) return pair.message;
+  const s = normaliseStrength(pair.home.strength, pair.away.strength);
+  return `${pair.home.name} ${s.home.toFixed(1)}% vs ${pair.away.name} ${s.away.toFixed(1)}%. ` +
+    'This split comes from the team strengths. The strength dropdown does not apply here.';
 }
 
 function pickVenue(team, rand) {
@@ -405,11 +447,16 @@ function init() {
   $('#homeTeam').addEventListener('change', (e) => {
     app.home = findTeam(e.target.value.trim());
     recommendStrength();
+    updateStrengthDisplay();
   });
   $('#awayTeam').addEventListener('change', (e) => {
     app.away = findTeam(e.target.value.trim());
     recommendStrength();
+    updateStrengthDisplay();
   });
+  for (const id of ['customHomeName', 'customHomeStrength', 'customAwayName', 'customAwayStrength']) {
+    $(`#${id}`).addEventListener('input', updateStrengthDisplay);
+  }
   $('#isSecondLeg').addEventListener('change', (e) => {
     $('#firstLegGoals').style.visibility = e.target.checked
       ? 'visible'

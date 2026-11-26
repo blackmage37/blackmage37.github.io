@@ -127,6 +127,11 @@ Real-world reference (top-flight football): about 2.6–2.8 goals per match, so 
 - Engine effects: the substitute replaces a player in the lineup, a substitute's goal weight applies once they are on, and the event is logged for the UI.
 - Open questions: maximum number of substitutions, whether injuries are modelled, and whether bench quality should depend on squad depth.
 
+### 6a. 🔲 Investigate lopsided possession
+- Observed in testing: possession splits can be very lopsided (e.g. 85/15 or close to it) even when strengths are close, which looks unrealistic.
+- Likely causes to check: the possession step (`Math.round(rand() × 1.4)`) is almost always 0 or 1, so drift is random-walk-like and can reach the 15–85 clamp; the adjuster only applies when strengths differ by a threshold; and the clamp is reached without any reversion.
+- Plan: measure the possession distribution (mean, spread, share of matches hitting the clamp) at balanced and mismatched strengths, then decide whether to add mean reversion or change the step size. Possession affects foul counts and so indirectly card-driven strength loss, so re-check the balance bands after any change.
+
 ### 7a. 🔲 Sample team rosters (test data)
 - Owner to supply rosters for the sample teams in `data/sample-teams.js` (currently strength and group only).
 - Each roster: 11 starters and substitutes, with name and position (GK, DF, MF, FW), and optionally a goalscoring weight per player (item 8).

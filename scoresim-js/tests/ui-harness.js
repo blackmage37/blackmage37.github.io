@@ -151,5 +151,34 @@ for (const [name, strength] of Object.entries(expectedSamples)) {
   check(`samples: ${name} = ${strength}`, !!t && t.strength === strength, t ? `got ${t.strength}` : 'missing');
 }
 
+// 7. Relative strength display: sample and custom teams show the real split,
+// not a bucket label, and the misleading dropdown is hidden.
+setSource('samples');
+el('homeTeam').value = 'Akach';
+el('awayTeam').value = 'Limey Isles';
+get('recommendStrength(); updateStrengthDisplay();');
+check('display: samples hide the bucket dropdown', el('relativeStrength').style.display === 'none');
+const sampleNote = el('directStrengthNote').textContent;
+check('display: Akach vs Limey Isles shows real split (65.5% / 34.5%)', sampleNote.includes('Akach 65.5%') && sampleNote.includes('Limey Isles 34.5%'), sampleNote);
+check('display: no "equal in class" label for mismatched samples', !/equal in class/i.test(sampleNote));
+check('display: note states the dropdown does not apply', /dropdown does not apply/.test(sampleNote));
+
+el('homeTeam').value = 'Utica United';
+el('awayTeam').value = 'Dynapolis United';
+get('updateStrengthDisplay();');
+check('display: equal sample teams show 50.0% / 50.0%', /Utica United 50\.0% vs Dynapolis United 50\.0%/.test(el('directStrengthNote').textContent));
+
+setSource('custom');
+el('customHomeName').value = '';
+get('updateStrengthDisplay();');
+check('display: custom with missing input asks for values', /Enter both custom teams/.test(el('directStrengthNote').textContent));
+fillCustom('Team Alpha', 'Team Beta', '10.93', '7.31', '2024');
+get('updateStrengthDisplay();');
+check('display: custom shows the 10.93/7.31 split', /Team Alpha 59\.9% vs Team Beta 40\.1%/.test(el('directStrengthNote').textContent), el('directStrengthNote').textContent);
+
+setSource('clubs');
+check('display: database play shows the dropdown again', el('relativeStrength').style.display === '');
+check('display: database play hides the sample/custom note', el('directStrengthNote').style.display === 'none');
+
 console.log(failures === 0 ? '\nALL UI CHECKS PASSED' : `\n${failures} UI CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
