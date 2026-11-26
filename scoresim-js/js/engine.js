@@ -18,9 +18,9 @@ const BASE_SHOTS_PER_MATCH = 24; // total shot volume at balanced tactics (1 vs 
  * balancedGoals = average total goals in a 50/50 match at neutral settings.
  * See ROADMAP item 5 and docs.html for the measurements behind these values. */
 const GOAL_RATE_PRESETS = {
-  low: { goalDivisor: 1.4, goalChanceFloor: 0.2, balancedGoals: 2.18 },
-  medium: { goalDivisor: 1.2, goalChanceFloor: 0.25, balancedGoals: 2.46 },
-  high: { goalDivisor: 1.0, goalChanceFloor: 0.3, balancedGoals: 2.85 },
+  low: { goalDivisor: 1.4, goalChanceFloor: 0.225, balancedGoals: 2.17 },
+  medium: { goalDivisor: 1.2, goalChanceFloor: 0.25, balancedGoals: 2.45 },
+  high: { goalDivisor: 1.1, goalChanceFloor: 0.3, balancedGoals: 2.68 },
 };
 
 /* Experimental switches for the strength-conversion comparison (see ROADMAP).
@@ -56,6 +56,17 @@ function normaliseStrength(home, away) {
  * linear: s / 100 (current). sqrt: normalised sqrt, which softens the gap.
  * The two shares still sum to 1 for any pair.
  */
+/**
+ * Shot-volume modifier based on possession share.
+ * Natural log scaled so 50% possession = 1.0, with diminishing returns.
+ * With possession clamped to 15-85, the modifier ranges roughly 0.69x to
+ * 1.14x: a side with the ball most of the match gets somewhat more shots,
+ * but possession alone never shuts the other side out.
+ */
+function possessionShotModifier(possession) {
+  return Math.log(possession) / Math.log(50);
+}
+
 function shotShare(strengthShare) {
   if (EXPERIMENT.volumeMapping === 'sqrt') {
     return Math.sqrt(strengthShare) / (Math.sqrt(strengthShare) + Math.sqrt(100 - strengthShare));
@@ -165,7 +176,7 @@ function createMatchEngine(config, rng) {
       isSecondLeg: false,
       homeFirstLegGoals: 0,
       awayFirstLegGoals: 0,
-      goalRate: 'medium', // 'low' | 'medium' | 'high' (see GOAL_RATE_PRESETS); default chosen in conversation
+      goalRate: 'high', // 'low' | 'medium' | 'high' (see GOAL_RATE_PRESETS); default chosen in conversation
     },
     config
   );
@@ -274,11 +285,11 @@ function createMatchEngine(config, rng) {
     const step = gapIsWide ? Math.round(rand() * 0.75) : Math.round(rand() * 1.4);
 
     if (rand() < (state.homeStrength + adjuster) / 100) {
-      state.homePossession += step;
+      state.homePossession += step;   // home keeps possession
       addMorale('home', moraleShift);
       addMorale('away', -moraleShift);
     } else {
-      state.awayPossession += step;
+      state.homePossession -= step;   // away takes possession
       addMorale('away', moraleShift);
       addMorale('home', -moraleShift);
     }
@@ -362,7 +373,11 @@ function createMatchEngine(config, rng) {
     const potential = isHome ? state.homePotentialShots : state.awayPotentialShots;
     const lineup = isHome ? state.homeLineup : state.awayLineup;
     if (lineup.length === 0) return;
-    if (rand() >= potential / 90) return;
+    // possession affects shot volume with diminishing returns (natural log)
+    const possessionModifier = possessionShotModifier(
+      isHome ? state.homePossession : state.awayPossession
+    );
+    if (rand() >= (potential / 90) * possessionModifier) return;
 
     if (isHome) state.homeShots++;
     else state.awayShots++;
@@ -524,6 +539,7 @@ if (typeof module !== 'undefined' && module.exports) {
   GOAL_RATE_PRESETS,
   drawSetupChoices,
   shotShare,
+  possessionShotModifier,
   conversionStrength,
   accuracyFor,
   createMatchEngine,

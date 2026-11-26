@@ -75,8 +75,9 @@ img/            Fallback team logo</pre>
     <li><strong>Fouls</strong> (each side): probability <code>potentialFouls/90</code>. On a foul:
         1/7 chance of a yellow to a random player (second yellow ⇒ red, player removed,
         strength −9%, morale ±15% coin flip); otherwise 1/500 chance of a straight red.</li>
-    <li><strong>Shots</strong> (each side, independently): probability <code>potentialShots/90</code>;
-        on-target per the accuracy constant (+0.2 morale); goal chance is
+    <li><strong>Shots</strong> (each side, independently): probability <code>potentialShots/90 × possessionModifier</code>,
+        where <code>possessionModifier = log(possession) / log(50)</code> (natural log, 50% possession = 1.0x,
+        range ~0.69–1.14x). On-target per the accuracy constant (+0.2 morale); goal chance is
         <code>max(0.20, (conv(strength)+morale[+crowd])/100 / (1.4+rand))</code>, where
         <code>conv(s) = 50·(s/50)^p</code> with p = 1 (linear). The 0.20 floor applies to both
         sides equally. Scorer is a random <em>outfield</em> player; +1 morale on scoring.</li>

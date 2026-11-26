@@ -41,8 +41,10 @@ Measured with `createMatchEngine` over 3,000 matches per row, crowd = 0, morale 
 - ✅ **Continuous tactics formula**: removes the discontinuity at equal tactics; symmetric.
 - ✅ **Shot-volume mapping** (sqrt share, option B): softens the underdog's shot share.
 - ✅ **50/50 asymmetry** investigated: noise, confirmed by mirror tests on fresh seeds.
+- ✅ **Possession one-way ratchet fixed**: away gains were silently discarded, pushing home possession to ~71% at 50/50. Possession is now a single shared value moving both directions.
+- ✅ **Possession → shots coupling**: natural-log modifier on shot probability (50% = 1.0x, range ~0.69–1.14x). Shots now correlate with possession.
 - ✅ **Calibration to locked targets** (item 5, 70/30 matchup).
-- ✅ **Goal-rate presets** (new, replaces the single goal-rate setting): low / medium / high.
+- ✅ **Goal-rate presets** (new, replaces the single goal-rate setting): low / medium / high, all inside locked bands.
 
 ### Locked calibration targets (agreed)
 | Target | Band | Status |

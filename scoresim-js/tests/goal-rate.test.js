@@ -28,11 +28,11 @@ describe('goal-rate presets: validation', () => {
     assert.throws(() => createMatchEngine({ goalRate: 'extreme' }), /unknown goalRate "extreme"/);
   });
 
-  test('medium is the default preset when no goalRate is given', () => {
+  test('high is the default preset when no goalRate is given', () => {
     const e = createMatchEngine({});
-    assert.equal(e.config.goalRate, 'medium');
-    assert.equal(e.config.goalDivisor, GOAL_RATE_PRESETS.medium.goalDivisor);
-    assert.equal(e.config.goalChanceFloor, GOAL_RATE_PRESETS.medium.goalChanceFloor);
+    assert.equal(e.config.goalRate, 'high');
+    assert.equal(e.config.goalDivisor, GOAL_RATE_PRESETS.high.goalDivisor);
+    assert.equal(e.config.goalChanceFloor, GOAL_RATE_PRESETS.high.goalChanceFloor);
   });
 
   test('preset values are copied into the match config', () => {

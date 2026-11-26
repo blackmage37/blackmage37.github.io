@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScoreSim — Config Options</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="jumbotron">
+    <h2>ScoreSim — Config Options</h2>
+    <small>Tune goal-rate constants and preview their effect on match outcomes. <a href="index.html">Back to simulator</a></small>
+  </header>
+
+  <main class="container">
+    <section class="config-panel">
+      <h3>Goal rate presets</h3>
+      <p>Each preset was measured against locked calibration targets: favourite win 63–68%, underdog win 13–17% in a 70/30 matchup.</p>
+      <div class="preset-grid" id="presetGrid"></div>
+      <div class="presetHint" id="presetHint"></div>
+    </section>
+
+    <section class="config-panel">
+      <h3>Custom goal-rate constants</h3>
+      <p>Adjust the goal-chance divisor and floor. The divisor softens the effect of strength on goal conversion; the floor sets a minimum conversion probability for every shot on target.</p>
+      <div class="field">
+        <label for="goalDivisor">Goal-chance divisor <span id="divisorVal"></span></label>
+        <input type="range" id="goalDivisor" min="0.8" max="2.0" step="0.05" />
+        <span class="unit">(current: <span id="divisorDisp"></span>)</span>
+      </div>
+      <div class="field">
+        <label for="goalChanceFloor">Min. shot-on-target conversion <span id="floorVal"></span></label>
+        <input type="range" id="goalChanceFloor" min="0" max="0.5" step="0.025" />
+        <span class="unit">(current: <span id="floorDisp"></span>)</span>
+      </div>
+      <div class="field">
+        <label>Custom preset name</label>
+        <input type="text" id="customPresetName" placeholder="e.g. 'My league'" />
+      </div>
+      <div class="actions">
+        <button id="saveCustomBtn" class="bigBtn">Save as custom preset</button>
+        <button id="resetBtn" class="bigBtn" style="background:#6b7a9d;">Reset to defaults</button>
+      </div>
+      <div class="saveNote" id="saveNote"></div>
+    </section>
+
+    <section class="preview-panel">
+      <h3>Live preview (500 seeded matches)</h3>
+      <p>Re-runs automatically when you change a value. Shows expected outcomes for a neutral 70/30 matchup and a balanced 50/50 matchup.</p>
+      <div class="previewGrid" id="previewGrid"></div>
+      <div class="bandCheck" id="bandCheck"></div>
+      <p class="previewNote">Preview uses 500 matches for speed. For precise calibration, run more matches in the test suite.</p>
+    </section>
+  </main>
+
+  <script src="data/sample-teams.js"></script>
+  <script src="js/strength.js"></script>
+  <script src="js/rng.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/config.js"></script>
+</body>
+</html>
