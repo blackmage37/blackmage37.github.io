@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScoreSim — Football Results Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header id="intro" class="jumbotron">
+    <h2>Football Results Simulator</h2>
+    <small>Vanilla JS port — no server required. <a href="docs.html">Documentation</a></small>
+  </header>
+
+  <!-- ============ SETTINGS VIEW ============ -->
+  <main id="settingsView" class="container">
+    <section class="settingsMain">
+      <div class="field">
+        <label for="tournament">Tournament</label>
+        <select id="tournament"></select>
+      </div>
+      <div class="field teams">
+        <input id="homeTeam" type="text" list="teamList" placeholder="Choose home team" />
+        <input id="awayTeam" type="text" list="teamList" placeholder="Choose away team" />
+        <datalist id="teamList"></datalist>
+      </div>
+      <div class="field secondLeg">
+        <label><input type="checkbox" id="isSecondLeg" /> 2nd leg of Home &amp; Away match?</label>
+        <div id="firstLegGoals" style="visibility: hidden;">
+          <label>Hosts' 1st leg goals <input type="number" id="homeLeg1Goals" min="0" /></label>
+          <label>Visitors' 1st leg goals <input type="number" id="awayLeg1Goals" min="0" /></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="relativeStrength">Relative strength
+          <span id="strengthRecommended" style="display:none;">(recommended)</span></label>
+        <select id="relativeStrength"></select>
+      </div>
+      <div class="field">
+        <label for="crowdSupport">Home crowd support</label>
+        <select id="crowdSupport"></select>
+      </div>
+    </section>
+    <section class="settingsOther">
+      <div class="field">
+        <label for="homeMorale">Hosts' motivation &amp; morale</label>
+        <select id="homeMorale"></select>
+        <label for="homeTactics">Home team tactics</label>
+        <select id="homeTactics"></select>
+      </div>
+      <div class="field">
+        <label for="awayMorale">Visitors' motivation &amp; morale</label>
+        <select id="awayMorale"></select>
+        <label for="awayTactics">Away team tactics</label>
+        <select id="awayTactics"></select>
+      </div>
+    </section>
+    <button id="proceedBtn" class="bigBtn">Proceed to match</button>
+  </main>
+
+  <!-- ============ MATCH VIEW ============ -->
+  <main id="matchView" class="scoreboard" style="display: none;">
+    <div class="metaRow">
+      <div id="sbTournament"></div>
+      <div id="sbVenue"></div>
+    </div>
+    <div class="mainRow">
+      <div class="teamZone">
+        <span id="sbHomeName" class="teamName"></span>
+        <img id="sbHomeLogo" alt="" width="70" />
+      </div>
+      <div id="sbScore" class="score">0-0</div>
+      <div class="teamZone">
+        <img id="sbAwayLogo" alt="" width="70" />
+        <span id="sbAwayName" class="teamName"></span>
+      </div>
+    </div>
+    <div class="eventsRow">
+      <ul id="homeEvents" class="events"></ul>
+      <div class="timeBox">
+        <div id="sbAggregate" class="aggregate" style="display:none;"></div>
+        <div id="sbMinute" class="minute">0'</div>
+        <div id="sbStatus" class="status">Not started</div>
+        <button id="kickOffBtn" class="bigBtn">Kick off</button>
+      </div>
+      <ul id="awayEvents" class="events away"></ul>
+    </div>
+    <table id="statsTable" class="stats">
+      <tbody>
+        <tr><td>50%</td><td>Possession</td><td>50%</td></tr>
+        <tr><td>0</td><td>Attempts</td><td>0</td></tr>
+        <tr><td>0</td><td>Shots on Goal</td><td>0</td></tr>
+        <tr><td>0</td><td>Fouls</td><td>0</td></tr>
+        <tr><td>0</td><td>Yellow Cards</td><td>0</td></tr>
+        <tr><td>0</td><td>Red Cards</td><td>0</td></tr>
+      </tbody>
+    </table>
+    <button id="playAnotherBtn" class="bigBtn" style="display:none;">Simulate another match</button>
+  </main>
+
+  <script src="data/clubs.js"></script>
+  <script src="data/nations.js"></script>
+  <script src="js/strength.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

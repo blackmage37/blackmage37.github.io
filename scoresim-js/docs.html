@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ScoreSim — Documentation</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 860px; margin: 2em auto; padding: 0 1em; color: #222; line-height: 1.55; }
+    h1, h2, h3 { color: #11335c; }
+    code, pre { background: #f2f4f8; border-radius: 4px; padding: 0.1em 0.35em; font-size: 0.92em; }
+    pre { padding: 0.8em 1em; overflow-x: auto; }
+    table { border-collapse: collapse; margin: 1em 0; }
+    th, td { border: 1px solid #c9d2e0; padding: 0.4em 0.8em; text-align: left; }
+    th { background: #e8edf5; }
+    .fix { background: #fff6e0; border-left: 4px solid #e0a500; padding: 0.6em 1em; margin: 0.6em 0; }
+  </style>
+</head>
+<body>
+  <h1>ScoreSim (Vanilla JS) — Documentation</h1>
+  <p>A dependency-free browser port of the Angular/TypeScript "Football Results Simulator".
+     Open <code>index.html</code> directly (double-click) — no server, build step, or install needed.</p>
+
+  <h2>File structure</h2>
+  <pre>
+index.html      UI markup (settings form + scoreboard + stats)
+style.css       Styling
+docs.html       This page
+data/clubs.js   UEFA club database   (const UEFA_CLUBS = [...])
+data/nations.js UEFA nations database (const UEFA_NATIONS = [...])
+js/strength.js  Team strength derivation (pure functions)
+js/engine.js    Match simulation engine (pure, UI-free)
+js/ui.js        DOM wiring, timer, rendering
+img/            Fallback team logo</pre>
+  <p>Data is embedded as <code>.js</code> files instead of JSON so the app works from
+     <code>file://</code> without CORS/fetch issues.</p>
+
+  <h2>Architecture</h2>
+  <p><code>ui.js</code> reads the form and builds a <strong>MatchConfig</strong>; <code>engine.js</code>
+     owns all simulation state and exposes <code>kickOff()</code>, <code>tick()</code> (advance one
+     match minute) and <code>simulateToEnd()</code>. The UI calls <code>tick()</code> every 150&nbsp;ms
+     and re-renders. The engine never touches the DOM and accepts an injectable RNG, so it is
+     directly unit-testable in Node (<code>module.exports</code> guard at the bottom of each js file).</p>
+
+  <h2>Match configuration</h2>
+  <table>
+    <tr><th>Field</th><th>Range</th><th>Meaning</th></tr>
+    <tr><td>homeStrength / awayStrength</td><td>30–70 (sum 100)</td><td>Relative class of the teams; drives possession, shots, fouls and goal chance</td></tr>
+    <tr><td>homeCrowdSupport</td><td>0–8</td><td>Bonus added to the home side's shot volume and goal chance</td></tr>
+    <tr><td>homeMorale / awayMorale</td><td>0–4 (drifts in-match)</td><td>Motivation; shifts with possession, shots on target, goals, red cards</td></tr>
+    <tr><td>homeTactics / awayTactics</td><td>0.6 (defensive) – 1.4 (attacking)</td><td>Determines overall shot volume of the match</td></tr>
+    <tr><td>isSecondLeg + first-leg goals</td><td>—</td><td>Enables aggregate scoring, extra time and penalties</td></tr>
+  </table>
+
+  <h3>Strength derivation (strength.js)</h3>
+  <p>If both teams exist in the database, a recommended strength bucket is computed:
+     <strong>clubs</strong> — compare last-season division (each division apart shifts 1–2 buckets),
+     else points ratio thresholds (0.8 / 0.8889 / 0.9412 / 1.0625 / 1.125 / 1.25);
+     <strong>nations</strong> — FIFA ranking difference buckets (±5 → equal, ±10, ±30, beyond).
+     Buckets map to 30/70, 40/60, 45/55, 50/50, 55/45, 60/40, 70/30. The user can override.</p>
+
+  <h2>Simulation model (engine.js)</h2>
+  <h3>Pre-match</h3>
+  <ul>
+    <li><code>allPotentialFouls = 20 + rand*7</code>, split inversely by opponent strength.</li>
+    <li><code>allPotentialShots</code> from both tactics values: attack-vs-defence
+        <code>24(h+a)/3a</code>; both attacking <code>24(h+a)/2a</code> (open game);
+        both defensive <code>24(h+a)/4a</code> (closed game).</li>
+    <li>Each side's shot share: <code>allShots × (strength + morale [+ crowd]) / 100</code>.</li>
+    <li>Per-match shot accuracy constant per team: uniform 0.1–0.5.</li>
+  </ul>
+  <h3>Each simulated minute (tick)</h3>
+  <ol>
+    <li><strong>Possession</strong>: weighted coin flip on strength (± a noise adjuster that
+        narrows big mismatches) moves possession 0–1 point, clamped to 15–85. The winner
+        gains a tiny morale edge.</li>
+    <li><strong>Fouls</strong> (each side): probability <code>potentialFouls/90</code>. On a foul:
+        1/7 chance of a yellow to a random player (second yellow ⇒ red, player removed,
+        strength −9%, morale ±15% coin flip); otherwise 1/500 chance of a straight red.</li>
+    <li><strong>Shots</strong> (each side, independently): probability <code>potentialShots/90</code>;
+        on-target per the accuracy constant (+0.2 morale); goal with chance
+        <code>(strength+morale[+crowd])/100 / (1.5+rand)</code>. Scorer is a random
+        <em>outfield</em> player; +1 morale on scoring.</li>
+    <li><strong>Clock</strong>: injury time 0–5 min rolled at 44' and 89'; 5-tick half-time break;
+        at FT, two-leg ties level on aggregate go to extra time, then a penalty shootout
+        (random 0–5 each, sudden death until decided).</li>
+  </ol>
+
+  <h2>Bug fixes vs. the original Angular app</h2>
+  <div class="fix"><strong>Away shot suppression:</strong> the away team could only shoot in minutes
+    when the home team didn't (hidden <code>else</code> nesting). Both sides now roll independently.</div>
+  <div class="fix"><strong>Wrong yellow-card counter:</strong> an away second yellow pushed the
+    <em>home</em> yellow count to the UI. Counters now always track the correct side.</div>
+  <div class="fix"><strong>Biased / out-of-bounds player pick:</strong>
+    <code>Math.round(0.5 + rand*(len-1))</code> could produce index = length (undefined ⇒ crash)
+    and was non-uniform. Replaced with <code>Math.floor(rand*len)</code>; goalscorers are now
+    outfield players only.</div>
+  <div class="fix"><strong>Asymmetric red-card morale:</strong> away teams suffered −25%/+5% where home
+    had ±15%. Now symmetric for both sides.</div>
+  <div class="fix"><strong>Never-cleared interval:</strong> the original <code>setInterval</code> ran
+    forever after full time. The UI timer is cleared when <code>state.isFinished</code> is set.</div>
+  <div class="fix"><strong>Dead aggregate logic:</strong> an always-true condition
+    (<code>a==b || a&gt;b || a&lt;b</code>) wrapped the extra-time branch; removed.</div>
+  <div class="fix"><strong>Empty-lineup crashes:</strong> fouls/shots are skipped if a side has no
+    players left (pathological red-card scenarios).</div>
+
+  <h2>Using the engine programmatically</h2>
+  <pre>
+const engine = createMatchEngine({
+  homeStrength: 60, awayStrength: 40,
+  homeCrowdSupport: 5, homeMorale: 3, awayMorale: 2,
+  homeTactics: 1.2, awayTactics: 0.8,
+}, mySeededRng);           // rng optional; defaults to Math.random
+
+engine.simulateToEnd();     // or: engine.kickOff(); engine.tick(); ...
+console.log(engine.state.homeGoals, engine.state.awayGoals);
+console.log(engine.state.homeGoalEvents);  // [{name, minute}, ...]</pre>
+  <p>In Node: <code>const { createMatchEngine } = require('./js/engine.js');</code> — this is
+     the hook for the unit tests we'll add next.</p>
+
+  <h2>Known limitations / enhancement ideas</h2>
+  <ul>
+    <li>Substitutes exist in neither data nor engine (the original had unused sub arrays).</li>
+    <li>No away-goals rule (matches current UEFA rules; trivial to add as a config flag).</li>
+    <li>Penalty shootout is purely random, not kick-by-kick.</li>
+    <li>Morale is unbounded upward; a clamp (e.g. 0–10) is a good balance tweak.</li>
+    <li>Possession currently moves at most 1%/minute; a float accumulator would be smoother.</li>
+  </ul>
+</body>
+</html>

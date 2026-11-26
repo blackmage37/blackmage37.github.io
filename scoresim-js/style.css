@@ -1,0 +1,86 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #11223a;
+  color: #eef2f7;
+  min-height: 100vh;
+}
+a { color: #7fc3ff; }
+
+.jumbotron { text-align: center; padding: 1.5em 1em 0.5em; }
+.jumbotron h2 { margin: 0 0 0.25em; }
+
+.container {
+  max-width: 760px;
+  margin: 1em auto;
+  padding: 1.5em;
+  background: #1b3252;
+  border-radius: 10px;
+}
+.field { margin-bottom: 1em; display: flex; flex-direction: column; gap: 0.35em; }
+.field.teams { flex-direction: row; gap: 1em; }
+.field.teams input { flex: 1; }
+.settingsOther { display: flex; gap: 2em; }
+.settingsOther .field { flex: 1; }
+label { font-size: 0.9em; opacity: 0.9; }
+input, select {
+  padding: 0.5em;
+  border-radius: 6px;
+  border: 1px solid #40587a;
+  background: #0e1d33;
+  color: #eef2f7;
+}
+#firstLegGoals { display: flex; gap: 1.5em; margin-top: 0.5em; }
+#firstLegGoals input { width: 4.5em; margin-left: 0.5em; }
+
+.bigBtn {
+  display: inline-block;
+  padding: 0.7em 2em;
+  font-size: 1.05em;
+  border: none;
+  border-radius: 8px;
+  background: #2a9d4a;
+  color: white;
+  cursor: pointer;
+}
+.bigBtn:hover { background: #33b858; }
+
+/* ------- scoreboard ------- */
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  max-width: 900px;
+  margin: 1em auto;
+  padding: 1.5em;
+  background: linear-gradient(160deg, #0b1a30, #16305a);
+  border-radius: 12px;
+  min-height: 80vh;
+}
+.metaRow { display: flex; gap: 2em; opacity: 0.85; font-size: 0.95em; }
+.mainRow { display: flex; align-items: center; gap: 1.5em; }
+.teamZone { display: flex; align-items: center; gap: 0.75em; }
+.teamName { font-size: 1.4em; font-weight: 600; letter-spacing: 0.04em; }
+.score { font-size: 3em; font-weight: 700; padding: 0 0.4em; }
+.eventsRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1.5em;
+  width: 100%;
+  align-items: start;
+}
+.events { list-style: none; margin: 0; padding: 0; font-size: 0.9em; }
+.events.away { text-align: right; }
+.events .sentOff { opacity: 0.85; }
+.timeBox { text-align: center; }
+.minute { font-size: 1.8em; font-weight: 600; }
+.status { opacity: 0.8; margin: 0.25em 0 0.75em; }
+.aggregate { font-size: 0.95em; margin-bottom: 0.25em; color: #ffd867; }
+
+.stats { width: 100%; max-width: 560px; border-collapse: collapse; margin-top: 1em; }
+.stats td { padding: 0.45em 0.8em; border-bottom: 1px solid #2d4a75; }
+.stats td:first-child { text-align: right; width: 30%; }
+.stats td:nth-child(2) { text-align: center; opacity: 0.75; }
+.stats td:last-child { text-align: left; width: 30%; }
