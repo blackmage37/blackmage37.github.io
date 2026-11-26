@@ -139,6 +139,39 @@ Real-world reference (top-flight football): about 2.6–2.8 goals per match, so 
 - Each roster: 11 starters and substitutes, with name and position (GK, DF, MF, FW), and optionally a goalscoring weight per player (item 8).
 - Once supplied, the sample file gains `players` arrays and the engine uses them instead of the generic squad. Rosters are needed before substitution logic (item 7) and goalscorer weighting (item 8) can be tested with real names.
 
+### 8. 🔲 Investigate shot conversion / on-target rates
+- Current on-target chance ranges 0.1–0.5 and goal chance uses `goalDivisor`/`goalChanceFloor`; observed goal rates feel lower than expected.
+- Plan: log `shotsOnGoal` and `goals` per match, compare on-target rate to real-world ~30‑40%; experiment with accuracy exponent and goal divisor bands; re-check baseline table after any change.
+
+### 11. 🔲 Goalscorer weighting as a player property
+- Add a `goalWeight` (or `scoringShare`) field to each player. The current behaviour is equivalent to every outfield player having weight 1.
+- Scorer selection becomes a weighted random draw over the players on the pitch. Goalkeepers default to weight 0 but can be configured.
+- **Open question: substitutes.** If weights are per player, a substitute's weight only counts after they come on, so the total weight on the pitch changes during a match. Options:
+   - (a) Use only on-pitch weights, renormalised each time. Simple and realistic.
+   - (b) Use a team-level scoring rate that is split across on-pitch players by weight. This keeps the goal rate stable when substitutions happen.
+   - (c) Give substitutes a reduced weight for their first minutes.
+- Recommendation: (b), so a substitution changes who scores but not how often the team scores.
+- Default weights come from position (forwards highest, defenders lowest), so existing rosters behave sensibly.
+
+## Suggested order
+
+1. Test suite (item 2): establishes the baseline measured above as regression protection.
+2. Morale clamp (item 4) and the 50/50 asymmetry investigation (part of item 5).
+3. Strength calibration (item 5), then the seeded RNG (item 1), since calibration results should be reproducible.
+4. Goalscorer weights (item 11) and substitutions (item 7), which share the lineup data model.
+5. Editor (item 6) and options page (item 3), which expose the constants and data built above.
+
+### 10. 🔲 Red card morale and scoring chance impact
+- Verify that a red card (9% strength reduction + morale adjustment) reduces scoring chance significantly as intended.
+- Plan: run baseline matches without red cards, then with red cards at various minutes; measure goal expectancy change; ensure the morale delta after red card (currently ±15% of setup morale) has the intended dampening effect; if needed, adjust the red-card strength penalty or morale adjustment to make the impact more pronounced.
+
+### 10. 🔲 Extra time and penalty shootout controls
+- Add "use extra time" and "use penalties" toggle switches to the main match page.
+- When "use extra time" is off, matches that are tied after 90+ injury time go directly to full time (no extra time).
+- When "use penalties" is off, tied matches after extra time are recorded as draws rather than penalty shootouts.
+- Engine already supports `MATCH_STATUS.EXTRA_TIME` and `MATCH_STATUS.PENALTIES`; the change is primarily in `ui.js` to expose these as user-configurable options.
+- Tie into the existing seed mechanism so toggles are reproducible with a given seed.
+
 ### 8. 🔲 Goalscorer weighting as a player property
 - Add a `goalWeight` (or `scoringShare`) field to each player. The current behaviour is equivalent to every outfield player having weight 1.
 - Scorer selection becomes a weighted random draw over the players on the pitch. Goalkeepers default to weight 0 but can be configured.
