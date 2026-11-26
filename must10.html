@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUST10 Fight Engine Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- 1. TOP CONTROL BAR -->
+    <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-30 backdrop-blur">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 font-extrabold text-slate-950 text-sm tracking-tighter shrink-0">
+                    10-9
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
+                        MUST10 Fight Engine Sandbox
+                        <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-amber-400 border border-slate-700">v3.2</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Boxing &amp; MMA Combat Simulator • Monte Carlo Odds • Judge Scorecards</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Mode Selector -->
+                <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+                    <button id="btnModeBoxing" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">Boxing (0)</button>
+                    <button id="btnModeMMA" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">MMA (1)</button>
+                </div>
+
+                <!-- Scheduled Rounds -->
+                <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5">
+                    <label for="inputRounds" class="text-xs font-semibold text-slate-400">Rounds:</label>
+                    <input id="inputRounds" type="number" min="1" max="50" value="12" class="w-14 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-xs font-mono font-bold text-white text-center focus:outline-none focus:border-rose-500">
+                </div>
+
+                <!-- Tiebreak Toggle -->
+                <label class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 cursor-pointer select-none">
+                    <span class="text-xs font-semibold text-slate-300">Tiebreak OT</span>
+                    <input id="inputTiebreak" type="checkbox" checked class="sr-only peer">
+                    <div class="relative w-9 h-5 bg-slate-800 rounded-full peer peer-checked:bg-rose-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 peer-checked:after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                </label>
+
+                <!-- Quick Presets -->
+                <button id="btnPresetBoxing" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 font-semibold text-xs border border-slate-700 transition">
+                    Boxing Sample (6)
+                </button>
+                <button id="btnPresetMMA" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold text-xs border border-slate-700 transition">
+                    MMA Sample (6)
+                </button>
+
+                <!-- Collapse / Expand All -->
+                <button id="btnToggleAllSections" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition">
+                    Collapse All
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div id="toastBanner" class="hidden fixed bottom-5 right-5 z-50 max-w-sm bg-slate-800 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <span id="toastDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+        <p id="toastMessage" class="text-xs sm:text-sm font-medium"></p>
+    </div>
+
+    <!-- MAIN STACKED CONTAINER -->
+    <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col gap-5">
+
+        <!-- =====================================================================
+             SECTION 1: ROSTER & BONUSES MANAGER (EXPANDED BY DEFAULT)
+             ===================================================================== -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div id="headerSectionRoster" class="px-4 sm:px-5 py-3.5 bg-slate-900/90 hover:bg-slate-800/50 cursor-pointer flex flex-wrap items-center justify-between gap-2 select-none transition">
+                <div class="flex items-center gap-2.5">
+                    <svg id="chevronRoster" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-100">1. Roster &amp; Bonuses Manager</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+                    <span id="badgeRosterSummary" class="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300">6 Fighters • 2 Bonuses</span>
+                    <span id="badgeSkillFloor" class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold">Floor: 1.780</span>
+                </div>
+            </div>
+
+            <div id="bodySectionRoster" class="p-4 sm:p-5 border-t border-slate-800/80 flex flex-col gap-4">
+                <!-- Sub-header: Editor Mode Tabs & Floor Explanation -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+                        <button id="tabEditorTable" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white transition">Table Editor</button>
+                        <button id="tabEditorRaw" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Raw Files (fighters.txt / bonuses.txt)</button>
+                    </div>
+                    <div class="text-xs text-slate-400">
+                        Dynamic Floor Formula: <code id="textFloorFormula" class="font-mono text-amber-400">min(0.1 * minPositive, 0.02 * maxSkill)</code>
+                    </div>
+                </div>
+
+                <!-- TABLE EDITOR VIEW -->
+                <div id="viewEditorTable" class="flex flex-col gap-4">
+                    <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/90">
+                                    <th class="py-2.5 px-3 font-semibold w-24">Bout</th>
+                                    <th class="py-2.5 px-2.5 font-semibold">Fighter Name</th>
+                                    <th class="py-2.5 px-2 font-semibold w-20">Trigram</th>
+                                    <th class="py-2.5 px-2 font-semibold w-24">Base Skill</th>
+                                    <th class="py-2.5 px-2 font-semibold w-20 text-emerald-400">Bonus (+)</th>
+                                    <th class="py-2.5 px-2 font-semibold w-24 text-amber-300">Eff. Skill</th>
+                                    <th id="thRosterStyle" class="py-2.5 px-2 font-semibold w-44">Style (-5 Outboxer / +5 KO)</th>
+                                    <th class="py-2.5 px-2.5 text-right font-semibold w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyFighters" class="divide-y divide-slate-800/70"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <button id="btnAddFighter" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 font-semibold text-xs transition">
+                            + Add Fighter
+                        </button>
+                        <span id="noticeOddRoster" class="hidden text-xs text-amber-400 font-medium">
+                            Odd fighter count: the last fighter will not have an opponent on the fight card.
+                        </span>
+                    </div>
+
+                    <!-- Bonuses Sub-Table -->
+                    <div class="pt-3 border-t border-slate-800 flex flex-col gap-2.5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Trigram Skill Modifiers (<code class="text-slate-400">bonuses.txt</code>)</h3>
+                            </div>
+                            <button id="btnAddBonus" type="button" class="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition">
+                                + Add Bonus
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60 max-w-md">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/90">
+                                        <th class="py-2 px-3 font-semibold w-28">Trigram</th>
+                                        <th class="py-2 px-3 font-semibold w-32">Skill Modifier</th>
+                                        <th class="py-2 px-3 text-right font-semibold w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyBonuses" class="divide-y divide-slate-800/70"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RAW FILES VIEW -->
+                <div id="viewEditorRaw" class="hidden flex-col gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="txtRawFighters" class="text-xs font-semibold text-slate-300">fighters.txt</label>
+                                <span class="text-[11px] font-mono text-slate-400">Name;TRIG;Skill Style</span>
+                            </div>
+                            <textarea id="txtRawFighters" rows="8" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-500 leading-relaxed"></textarea>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="txtRawBonuses" class="text-xs font-semibold text-slate-300">bonuses.txt</label>
+                                <span class="text-[11px] font-mono text-slate-400">TRIG;Bonus</span>
+                            </div>
+                            <textarea id="txtRawBonuses" rows="8" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-500 leading-relaxed"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="btnApplyRawFiles" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg shadow-rose-600/20 transition">
+                            Apply Raw Text
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             SECTION 2: ENGINE CONSTANTS & TUNING (COLLAPSED BY DEFAULT)
+             ===================================================================== -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div id="headerSectionConstants" class="px-4 sm:px-5 py-3.5 bg-slate-900/90 hover:bg-slate-800/50 cursor-pointer flex flex-wrap items-center justify-between gap-2 select-none transition">
+                <div class="flex items-center gap-2.5">
+                    <svg id="chevronConstants" class="w-4 h-4 text-slate-400 transition-transform duration-200" style="transform: rotate(-90deg);" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-100">2. Engine Constants &amp; Tuning</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="hidden sm:inline-block text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">Stoppage • Curve k • Weights • Style</span>
+                    <button id="btnResetConstants" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-semibold transition">
+                        Reset Defaults
+                    </button>
+                </div>
+            </div>
+
+            <div id="bodySectionConstants" class="hidden p-4 sm:p-5 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                <!-- Card A: Stoppage & Ratio -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5">
+                    <span class="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Stoppage &amp; Ratio Limits</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label for="inBoxStopBase" class="block text-[10px] text-slate-400 mb-1">Boxing Base</label>
+                            <input id="inBoxStopBase" type="number" step="10" min="0" max="5000" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                        <div>
+                            <label for="inMmaStopBase" class="block text-[10px] text-slate-400 mb-1">MMA Base</label>
+                            <input id="inMmaStopBase" type="number" step="25" min="0" max="5000" value="850" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                        <div>
+                            <label for="inMaxRatioCap" class="block text-[10px] text-slate-400 mb-1">Max Ratio</label>
+                            <input id="inMaxRatioCap" type="number" step="1" min="1" max="10000" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card B: Round-Win Curve & Floor -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5">
+                    <span class="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Round Curve &amp; Zero-Skill Floor</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label for="inExponentK" class="block text-[10px] text-slate-400 mb-1">Exponent k</label>
+                            <input id="inExponentK" type="number" step="0.05" min="0.05" max="5" value="0.65" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-amber-400 font-bold">
+                        </div>
+                        <div>
+                            <label for="inFloorMode" class="block text-[10px] text-slate-400 mb-1">Floor Mode</label>
+                            <select id="inFloorMode" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1.5 font-mono text-white">
+                                <option value="dynamic">Dynamic</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="inManualFloor" class="block text-[10px] text-slate-400 mb-1">Manual Val</label>
+                            <input id="inManualFloor" type="number" step="0.1" min="0.001" value="1.0" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-amber-300 disabled:opacity-40">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card C: Judging & Overtime -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5">
+                    <span class="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Judging &amp; Overtime Limits</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="inJudgeBiasMax" class="block text-[10px] text-slate-400 mb-1">Max Judge Bias (±)</label>
+                            <input id="inJudgeBiasMax" type="number" step="25" min="0" max="2500" value="500" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                        <div>
+                            <label for="inMaxExtraRounds" class="block text-[10px] text-slate-400 mb-1">Max Extra Rounds</label>
+                            <input id="inMaxExtraRounds" type="number" step="1" min="1" max="500" value="100" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card D: Score Weights -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+                    <span class="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Round Margin Weights (10-9 / 10-8 / 10-7)</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="block text-[10px] text-sky-400 mb-1">Boxing Weights</span>
+                            <div class="grid grid-cols-3 gap-1">
+                                <input id="inBox10_9" type="number" min="0" max="100" value="95" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                                <input id="inBox10_8" type="number" min="0" max="100" value="4" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                                <input id="inBox10_7" type="number" min="0" max="100" value="1" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-rose-400 mb-1">MMA Weights</span>
+                            <div class="grid grid-cols-3 gap-1">
+                                <input id="inMma10_9" type="number" min="0" max="100" value="98" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                                <input id="inMma10_8" type="number" min="0" max="100" value="2" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                                <input id="inMma10_7" type="number" min="0" max="100" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 font-mono text-center text-white">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card E: Boxing Style KO Multipliers -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+                    <span class="font-bold text-sky-400 uppercase tracking-wider text-[11px]">Boxing Style KO Multipliers [0.10–3.0]</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="inBoxAttWt" class="block text-[10px] text-slate-400 mb-1">Attacker KO Style Wt</label>
+                            <input id="inBoxAttWt" type="number" step="0.01" min="0" max="0.5" value="0.12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                        <div>
+                            <label for="inBoxDefWt" class="block text-[10px] text-slate-400 mb-1">Defender Exposure Wt</label>
+                            <input id="inBoxDefWt" type="number" step="0.01" min="0" max="0.5" value="0.08" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card F: MMA KO/Sub Split Weights -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 flex flex-col gap-2">
+                    <span class="font-bold text-rose-400 uppercase tracking-wider text-[11px]">MMA KO vs. Submission Weights [0.01–0.99]</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="inMmaWinWt" class="block text-[10px] text-slate-400 mb-1">Winner Style Wt</label>
+                            <input id="inMmaWinWt" type="number" step="0.004" min="0" max="0.5" value="0.096" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                        <div>
+                            <label for="inMmaLoseWt" class="block text-[10px] text-slate-400 mb-1">Loser Defense Wt</label>
+                            <input id="inMmaLoseWt" type="number" step="0.005" min="0" max="0.5" value="0.02" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 font-mono text-white">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             SECTION 3: MONTE CARLO MATCHUP ANALYZER (EXPANDED BY DEFAULT)
+             ===================================================================== -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div id="headerSectionMonteCarlo" class="px-4 sm:px-5 py-3.5 bg-slate-900/90 hover:bg-slate-800/50 cursor-pointer flex flex-wrap items-center justify-between gap-2 select-none transition">
+                <div class="flex items-center gap-2.5">
+                    <svg id="chevronMonteCarlo" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-100">3. Monte Carlo Matchup Analyzer</h2>
+                </div>
+                <span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold">1,000 Bouts</span>
+            </div>
+
+            <div id="bodySectionMonteCarlo" class="p-4 sm:p-5 border-t border-slate-800/80 flex flex-col gap-4">
+                <!-- Fighter Selectors & Run Button -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    <div class="md:col-span-4">
+                        <label for="selMcFighterA" class="block text-xs font-semibold text-rose-400 mb-1">Fighter A (Red Corner)</label>
+                        <select id="selMcFighterA" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-rose-500"></select>
+                    </div>
+                    <div class="md:col-span-1 text-center pb-2">
+                        <span class="text-xs font-extrabold text-slate-500">VS</span>
+                    </div>
+                    <div class="md:col-span-4">
+                        <label for="selMcFighterB" class="block text-xs font-semibold text-sky-400 mb-1">Fighter B (Blue Corner)</label>
+                        <select id="selMcFighterB" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-sky-500"></select>
+                    </div>
+                    <div class="md:col-span-3">
+                        <button id="btnRunMonteCarlo" type="button" class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 transition">
+                            Run 1,000-Bout Simulation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Pre-Fight Preview Bar -->
+                <div id="mcPreFightBar" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-xs"></div>
+
+                <!-- Monte Carlo Results & UK Fractional Odds Board -->
+                <div id="mcResultsContainer" class="flex flex-col gap-4">
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-bold text-slate-200">Simulation Outcome Distribution</span>
+                            <span id="mcSummaryHeader" class="text-xs font-mono text-slate-400">Select fighters and run 1,000-bout simulation</span>
+                        </div>
+
+                        <!-- Stacked Win % Bar -->
+                        <div class="w-full h-7 rounded-xl bg-slate-900 overflow-hidden flex text-xs font-extrabold mb-3 border border-slate-800">
+                            <div id="mcBarA" style="width: 50%;" class="bg-rose-600 text-white flex items-center justify-center transition-all duration-300">50.0%</div>
+                            <div id="mcBarDraw" style="width: 0%;" class="bg-slate-600 text-slate-100 flex items-center justify-center transition-all duration-300"></div>
+                            <div id="mcBarB" style="width: 50%;" class="bg-sky-600 text-white flex items-center justify-center transition-all duration-300">50.0%</div>
+                        </div>
+
+                        <!-- Method Breakdown Grid -->
+                        <div id="mcStatsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs"></div>
+                    </div>
+
+                    <!-- Estimated UK Fractional Betting Odds Board -->
+                    <div id="mcBettingOddsBoard" class="bg-slate-950/90 border border-slate-800 rounded-xl p-3.5 sm:p-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             PRIMARY ACTION BAR (BELOW MONTE CARLO, ABOVE FIGHT CARD RESULTS)
+             ===================================================================== -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
+            <div class="text-xs text-slate-400">
+                <span class="font-semibold text-slate-200">Card Lineup Ready:</span> Pairs sequential roster entries (<span class="font-mono text-slate-300">1 vs 2</span>, <span class="font-mono text-slate-300">3 vs 4</span>...).
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button id="btnClearResults" type="button" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition">
+                    Clear Results
+                </button>
+                <button id="btnSimulateCard" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-rose-600/25 transition flex items-center gap-2">
+                    <span>Simulate Fight Card</span>
+                    <span id="badgeBoutCount" class="px-2 py-0.5 rounded-md bg-rose-950/60 border border-rose-400/30 font-mono text-xs">3 Bouts</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             SECTION 4: FIGHT CARD RESULTS & SCORECARDS BLOCK
+             ===================================================================== -->
+        <section id="sectionResults" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col gap-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+                    <button id="tabOutVisual" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white transition">Visual Scorecards</button>
+                    <button id="tabOutResults" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition font-mono">results.txt</button>
+                    <button id="tabOutLine" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition font-mono">lineresults.txt</button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <button id="btnCopyResults" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition">Copy results.txt</button>
+                    <button id="btnDownloadResults" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-semibold border border-slate-700 transition">Download</button>
+                    <button id="btnCopyLine" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold border border-slate-700 transition">Copy lineresults.txt</button>
+                    <button id="btnDownloadLine" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-200 text-xs font-semibold border border-slate-700 transition">Download</button>
+                </div>
+            </div>
+
+            <!-- Visual Scorecards Panel -->
+            <div id="panelOutVisual" class="flex flex-col gap-4"></div>
+
+            <!-- Raw results.txt Panel -->
+            <pre id="panelOutResults" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed whitespace-pre"></pre>
+
+            <!-- Raw lineresults.txt Panel -->
+            <pre id="panelOutLine" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-300 overflow-x-auto leading-relaxed whitespace-pre"></pre>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            // =========================================================================
+            // 1. SAMPLE PRESETS & DEFAULT ENGINE CONSTANTS
+            // =========================================================================
+            const PRESETS = {
+                boxing: {
+                    mode: 0,
+                    rounds: 12,
+                    tiebreak: true,
+                    fighters: [
+                        { name: 'Naoya Inoue', trigram: 'JPN', skill: 95, style: 4.8 },
+                        { name: 'Floyd Mayweather', trigram: 'USA', skill: 96, style: -4.8 },
+                        { name: 'Terence Crawford', trigram: 'USA', skill: 94, style: 2.5 },
+                        { name: 'Shakur Stevenson', trigram: 'USA', skill: 89, style: -4.2 },
+                        { name: 'Artur Beterbiev', trigram: 'CAN', skill: 92, style: 4.9 },
+                        { name: 'Oleksandr Usyk', trigram: 'UKR', skill: 95, style: -1.5 }
+                    ],
+                    bonuses: [
+                        { trigram: 'JPN', skill: 1.5 },
+                        { trigram: 'UKR', skill: 1.0 }
+                    ]
+                },
+                mma: {
+                    mode: 1,
+                    rounds: 3,
+                    tiebreak: true,
+                    fighters: [
+                        { name: 'Alex Pereira', trigram: 'PER', skill: 88, style: 4.5 },
+                        { name: 'Islam Makhachev', trigram: 'MAK', skill: 92, style: -3.5 },
+                        { name: 'Max Holloway', trigram: 'HOL', skill: 85, style: 3.0 },
+                        { name: 'Charles Oliveira', trigram: 'OLI', skill: 84, style: -4.0 },
+                        { name: 'Justin Gaethje', trigram: 'GAE', skill: 80, style: 4.0 },
+                        { name: 'Glass Jaw Joe', trigram: 'CAN', skill: 0, style: 0.0 }
+                    ],
+                    bonuses: [
+                        { trigram: 'MAK', skill: 2.0 },
+                        { trigram: 'PER', skill: 1.0 }
+                    ]
+                }
+            };
+
+            function defaultControls() {
+                return {
+                    boxingStopBase: 100,
+                    mmaStopBase: 850,
+                    maxRatioCap: 100,
+                    exponentK: 0.65,
+                    floorMode: 'dynamic',
+                    manualFloor: 1.0,
+                    box10_9: 95,
+                    box10_8: 4,
+                    box10_7: 1,
+                    mma10_9: 98,
+                    mma10_8: 2,
+                    mma10_7: 0,
+                    judgeBiasMax: 500,
+                    maxExtraRounds: 100,
+                    boxAttWt: 0.12,
+                    boxDefWt: 0.08,
+                    mmaWinWt: 0.096,
+                    mmaLoseWt: 0.02
+                };
+            }
+
+            // =========================================================================
+            // 2. APPLICATION STATE
+            // =========================================================================
+            const state = {
+                mode: 0,
+                rounds: 12,
+                tiebreak: true,
+                fighters: [],
+                bonuses: [],
+                controls: defaultControls(),
+                sectionsOpen: {
+                    roster: true,
+                    constants: false,
+                    monteCarlo: true
+                },
+                mcIndexA: 0,
+                mcIndexB: 1,
+                hasSimulatedCard: false,
+                lastResultsTxt: '',
+                lastLineResultsTxt: ''
+            };
+
+            // =========================================================================
+            // 3. UTILITY FUNCTIONS
+            // =========================================================================
+            function clamp(val, minV, maxV) {
+                return Math.min(Math.max(val, minV), maxV);
+            }
+
+            function formatOrdinal(n) {
+                const m10 = n % 10;
+                const m100 = n % 100;
+                if (m10 === 1 && m100 !== 11) return n + 'st';
+                if (m10 === 2 && m100 !== 12) return n + 'nd';
+                if (m10 === 3 && m100 !== 13) return n + 'rd';
+                return n + 'th';
+            }
+
+            function describeStyle(styleVal, mode) {
+                if (mode === 0) {
+                    if (styleVal >= 3.5) return 'KO Artist';
+                    if (styleVal >= 1.0) return 'Puncher';
+                    if (styleVal <= -3.5) return 'Defensive Genius';
+                    if (styleVal <= -1.0) return 'Outboxer';
+                    return 'Boxer-Puncher';
+                } else {
+                    if (styleVal >= 3.5) return 'Pure Striker';
+                    if (styleVal >= 1.0) return 'Striker';
+                    if (styleVal <= -3.5) return 'Pure Grappler';
+                    if (styleVal <= -1.0) return 'Grappler';
+                    return 'Well-Rounded';
+                }
+            }
+
+            // Convert win probability p in [0, 1] to clean UK Fractional Odds + Moneyline
+            function formatUkBettingOdds(prob) {
+                if (prob <= 0) {
+                    return { fractional: 'No Action', moneyline: 'N/A', impliedPct: '0.0%' };
+                }
+                const clampedP = clamp(prob, 0.002, 0.995);
+                const impliedPct = (prob * 100).toFixed(1) + '%';
+
+                // Decimal net profit per 1 unit staked: (1 / p) - 1
+                const netDecimal = (1.0 / clampedP) - 1.0;
+
+                // Standard bookmaker UK fractional ladder (num / den)
+                const ukLadder = [
+                    [1, 100], [1, 50], [1, 33], [1, 25], [1, 20], [1, 16], [1, 12], [1, 10],
+                    [1, 9], [1, 8], [1, 7], [1, 6], [1, 5], [2, 9], [1, 4], [2, 7], [3, 10],
+                    [1, 3], [4, 11], [2, 5], [4, 9], [1, 2], [8, 15], [4, 7], [8, 13], [4, 6],
+                    [8, 11], [4, 5], [5, 6], [10, 11], [1, 1], [11, 10], [6, 5], [5, 4],
+                    [11, 8], [6, 4], [13, 8], [7, 4], [15, 8], [2, 1], [9, 4], [5, 2],
+                    [11, 4], [3, 1], [100, 30], [7, 2], [4, 1], [9, 2], [5, 1], [11, 2],
+                    [6, 1], [13, 2], [7, 1], [15, 2], [8, 1], [9, 1], [10, 1], [11, 1],
+                    [12, 1], [14, 1], [16, 1], [18, 1], [20, 1], [22, 1], [25, 1], [28, 1],
+                    [33, 1], [40, 1], [50, 1], [66, 1], [80, 1], [100, 1], [150, 1], [200, 1],
+                    [250, 1], [500, 1]
+                ];
+
+                let bestPair = ukLadder[0];
+                let bestDiff = Math.abs(netDecimal - (bestPair[0] / bestPair[1]));
+                for (let i = 1; i < ukLadder.length; i++) {
+                    const ratio = ukLadder[i][0] / ukLadder[i][1];
+                    const diff = Math.abs(netDecimal - ratio);
+                    if (diff < bestDiff) {
+                        bestDiff = diff;
+                        bestPair = ukLadder[i];
+                    }
+                }
+
+                const fractional = (bestPair[0] === 1 && bestPair[1] === 1)
+                    ? 'Evens (1/1)'
+                    : (bestPair[0] + '/' + bestPair[1]);
+
+                let moneyline = '';
+                if (clampedP >= 0.5) {
+                    const ml = -Math.round((clampedP / (1.0 - clampedP)) * 100);
+                    moneyline = String(ml);
+                } else {
+                    const ml = Math.round(((1.0 - clampedP) / clampedP) * 100);
+                    moneyline = '+' + ml;
+                }
+
+                return { fractional, moneyline, impliedPct };
+            }
+
+            let toastTimer = null;
+            function showToast(msg, isError) {
+                const banner = document.getElementById('toastBanner');
+                const dot = document.getElementById('toastDot');
+                const text = document.getElementById('toastMessage');
+                text.textContent = msg;
+                dot.className = isError
+                    ? 'w-2.5 h-2.5 rounded-full bg-rose-400 shrink-0'
+                    : 'w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0';
+                banner.classList.remove('hidden');
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () {
+                    banner.classList.add('hidden');
+                }, 2800);
+            }
+
+            // =========================================================================
+            // 4. CORE SIMULATION ENGINE (PORTED FROM must10.cpp)
+            // =========================================================================
+            function getEffectiveFighters() {
+                const bonusMap = {};
+                for (let i = 0; i < state.bonuses.length; i++) {
+                    const b = state.bonuses[i];
+                    const tag = (b.trigram || '').trim().toUpperCase();
+                    if (tag) {
+                        bonusMap[tag] = (bonusMap[tag] || 0) + (Number(b.skill) || 0);
+                    }
+                }
+
+                const result = [];
+                for (let i = 0; i < state.fighters.length; i++) {
+                    const f = state.fighters[i];
+                    const tag = (f.trigram || '').trim().toUpperCase();
+                    const baseSkill = Number(f.skill) || 0;
+                    const bonusVal = (tag && bonusMap[tag] !== undefined) ? bonusMap[tag] : 0;
+                    const effSkill = baseSkill + bonusVal;
+                    const displayName = tag ? (f.name + ' (' + tag + ')') : f.name;
+                    const style = clamp(Number(f.style) || 0, -5.0, 5.0);
+                    result.push({
+                        rawName: f.name,
+                        trigram: tag,
+                        displayName: displayName,
+                        baseSkill: baseSkill,
+                        bonusVal: bonusVal,
+                        skill: effSkill,
+                        style: style
+                    });
+                }
+                return result;
+            }
+
+            function computeSkillFloor(effFighters) {
+                if (state.controls.floorMode === 'manual') {
+                    const m = Number(state.controls.manualFloor);
+                    return (m > 0) ? m : 1.0;
+                }
+
+                let foundPositive = false;
+                let minPositive = 0.0;
+                let maxSkill = 0.0;
+
+                for (let i = 0; i < effFighters.length; i++) {
+                    const s = effFighters[i].skill;
+                    if (s > 0.0) {
+                        if (!foundPositive) {
+                            minPositive = s;
+                            maxSkill = s;
+                            foundPositive = true;
+                        } else {
+                            if (s < minPositive) minPositive = s;
+                            if (s > maxSkill) maxSkill = s;
+                        }
+                    }
+                }
+
+                if (!foundPositive) return 1.0;
+                const floorVal = Math.min(0.1 * minPositive, 0.02 * maxSkill);
+                return (floorVal > 0.0) ? floorVal : 1.0;
+            }
+
+            function computeFightParameters(mode, ratio1, ratio2, style1, style2) {
+                const c = state.controls;
+                const stopBase = (mode === 0) ? (Number(c.boxingStopBase) || 0) : (Number(c.mmaStopBase) || 0);
+
+                const raw10_9 = (mode === 0) ? (Number(c.box10_9) || 0) : (Number(c.mma10_9) || 0);
+                const raw10_8 = (mode === 0) ? (Number(c.box10_8) || 0) : (Number(c.mma10_8) || 0);
+                const raw10_7 = (mode === 0) ? (Number(c.box10_7) || 0) : (Number(c.mma10_7) || 0);
+                const weightSum = raw10_9 + raw10_8 + raw10_7;
+
+                let w10_9 = 100.0, w10_8 = 0.0, w10_7 = 0.0;
+                if (weightSum > 0) {
+                    w10_9 = (raw10_9 / weightSum) * 100.0;
+                    w10_8 = (raw10_8 / weightSum) * 100.0;
+                    w10_7 = (raw10_7 / weightSum) * 100.0;
+                }
+
+                const kExp = (Number(c.exponentK) > 0) ? Number(c.exponentK) : 0.65;
+
+                let f1KoMult = 1.0;
+                let f2KoMult = 1.0;
+                if (mode === 0) {
+                    const attWt = Number(c.boxAttWt) || 0.12;
+                    const defWt = Number(c.boxDefWt) || 0.08;
+                    f1KoMult = clamp(1.0 + (attWt * style1) + (defWt * style2), 0.10, 3.0);
+                    f2KoMult = clamp(1.0 + (attWt * style2) + (defWt * style1), 0.10, 3.0);
+                }
+
+                let rawF1Stop = 0;
+                let rawF2Stop = 0;
+                if (ratio1 > 1.0) {
+                    rawF1Stop = stopBase * Math.log(ratio1 * Math.E) * f1KoMult;
+                    rawF2Stop = stopBase * ratio2 * f2KoMult;
+                } else if (ratio2 > 1.0) {
+                    rawF2Stop = stopBase * Math.log(ratio2 * Math.E) * f2KoMult;
+                    rawF1Stop = stopBase * ratio1 * f1KoMult;
+                } else {
+                    rawF1Stop = stopBase * f1KoMult;
+                    rawF2Stop = stopBase * f2KoMult;
+                }
+
+                let f1Stop = clamp(Math.floor(rawF1Stop), 1, 9998);
+                let f2Stop = clamp(9999 - Math.floor(rawF2Stop), 1, 9998);
+
+                if (f1Stop >= f2Stop) {
+                    const mid = Math.floor((f1Stop + f2Stop) / 2);
+                    f1Stop = clamp(mid - 1, 1, 9997);
+                    f2Stop = clamp(mid + 1, 2, 9998);
+                }
+
+                let p1Win = 0.5;
+                if (ratio1 !== 1.0) {
+                    const rPow = Math.pow(ratio1, kExp);
+                    p1Win = rPow / (rPow + 1.0);
+                }
+
+                const f1WinMax = clamp(Math.round(p1Win * 10000.0) - 1, 1, 9998);
+                const multiplier = (f1WinMax + 1) / 100.0;
+                const f1TenNine = Math.floor(f1WinMax - (multiplier * w10_9));
+                const f1TenEight = Math.floor(f1TenNine - (multiplier * w10_8));
+                const f2TenEight = Math.floor(9999 - ((100.0 - multiplier) * w10_7));
+                const f2TenNine = Math.floor(f2TenEight - ((100.0 - multiplier) * w10_8));
+
+                return {
+                    f1Stop: f1Stop,
+                    f2Stop: f2Stop,
+                    f1WinMax: f1WinMax,
+                    f1TenNine: f1TenNine,
+                    f1TenEight: f1TenEight,
+                    f2TenNine: f2TenNine,
+                    f2TenEight: f2TenEight,
+                    p1Win: p1Win,
+                    f1KoMult: f1KoMult,
+                    f2KoMult: f2KoMult,
+                    f1StopPct: (f1Stop / 10000.0) * 100.0,
+                    f2StopPct: ((9999 - f2Stop) / 10000.0) * 100.0
+                };
+            }
+
+            function scoreSingleRound(params, judge1bias, judge2bias, judge3bias) {
+                const r = Math.floor(Math.random() * 10000);
+                const maxjudgebias = (r <= 4999) ? Math.floor(r / 2) : Math.floor((9999 - r) / 2);
+
+                function applyBias(bias) {
+                    let val;
+                    if (maxjudgebias > Math.abs(bias)) val = r + bias;
+                    else if (bias > 0) val = r + maxjudgebias;
+                    else val = r - maxjudgebias;
+                    return clamp(val, 0, 9999);
+                }
+
+                function scoreCard(judgeVal) {
+                    if (judgeVal <= params.f1WinMax) {
+                        let f2Pts = 7;
+                        if (judgeVal > params.f1TenNine) f2Pts = 9;
+                        else if (judgeVal > params.f1TenEight) f2Pts = 8;
+                        return { f1: 10, f2: f2Pts };
+                    } else {
+                        let f1Pts = 7;
+                        if (judgeVal < params.f2TenNine) f1Pts = 9;
+                        else if (judgeVal < params.f2TenEight) f1Pts = 8;
+                        return { f1: f1Pts, f2: 10 };
+                    }
+                }
+
+                return {
+                    j1: scoreCard(applyBias(judge1bias)),
+                    j2: scoreCard(applyBias(judge2bias)),
+                    j3: scoreCard(applyBias(judge3bias))
+                };
+            }
+
+            function computeMmaKoProbability(winnerStyle, loserStyle) {
+                const c = state.controls;
+                const wWt = Number(c.mmaWinWt) || 0.096;
+                const lWt = Number(c.mmaLoseWt) || 0.02;
+                return clamp(0.50 + (wWt * winnerStyle) + (lWt * loserStyle), 0.01, 0.99);
+            }
+
+            function simulateSingleBout(f1, f2, skillFloor) {
+                const c = state.controls;
+                const maxRatio = (Number(c.maxRatioCap) >= 1) ? Number(c.maxRatioCap) : 100.0;
+                const biasMax = Math.max(0, Math.floor(Number(c.judgeBiasMax) || 0));
+                const maxExtra = Math.max(1, Math.floor(Number(c.maxExtraRounds) || 100));
+
+                const eff1 = (f1.skill > 0.0) ? f1.skill : skillFloor;
+                const eff2 = (f2.skill > 0.0) ? f2.skill : skillFloor;
+                const ratio1 = clamp(eff1 / eff2, 1.0 / maxRatio, maxRatio);
+                const ratio2 = clamp(eff2 / eff1, 1.0 / maxRatio, maxRatio);
+
+                const params = computeFightParameters(state.mode, ratio1, ratio2, f1.style, f2.style);
+
+                const judge1bias = biasMax > 0 ? (Math.floor(Math.random() * (biasMax * 2 + 1)) - biasMax) : 0;
+                const judge2bias = biasMax > 0 ? (Math.floor(Math.random() * (biasMax * 2 + 1)) - biasMax) : 0;
+                const judge3bias = biasMax > 0 ? (Math.floor(Math.random() * (biasMax * 2 + 1)) - biasMax) : 0;
+
+                const j1Rounds = [];
+                const j2Rounds = [];
+                const j3Rounds = [];
+
+                let isStoppage = false;
+                let stopRound = 0;
+                let stopFighter = 0;
+
+                for (let k = 1; k <= state.rounds; k++) {
+                    const r = Math.floor(Math.random() * 10000);
+                    if (r < params.f1Stop || r === 0) {
+                        isStoppage = true;
+                        stopRound = k;
+                        stopFighter = 1;
+                        break;
+                    } else if (r > params.f2Stop || r === 9999) {
+                        isStoppage = true;
+                        stopRound = k;
+                        stopFighter = 2;
+                        break;
+                    } else {
+                        const sc = scoreSingleRound(params, judge1bias, judge2bias, judge3bias);
+                        j1Rounds.push(sc.j1);
+                        j2Rounds.push(sc.j2);
+                        j3Rounds.push(sc.j3);
+                    }
+                }
+
+                let extraRoundsCount = 0;
+
+                function calcTotals() {
+                    let j1f1 = 0, j1f2 = 0, j2f1 = 0, j2f2 = 0, j3f1 = 0, j3f2 = 0;
+                    for (let idx = 0; idx < j1Rounds.length; idx++) {
+                        j1f1 += j1Rounds[idx].f1;
+                        j1f2 += j1Rounds[idx].f2;
+                        j2f1 += j2Rounds[idx].f1;
+                        j2f2 += j2Rounds[idx].f2;
+                        j3f1 += j3Rounds[idx].f1;
+                        j3f2 += j3Rounds[idx].f2;
+                    }
+                    return { j1f1: j1f1, j1f2: j1f2, j2f1: j2f1, j2f2: j2f2, j3f1: j3f1, j3f2: j3f2 };
+                }
+
+                let totals = calcTotals();
+
+                if (state.tiebreak && !isStoppage) {
+                    let tied = false;
+                    do {
+                        tied = false;
+                        let f1w = 0, f2w = 0;
+                        if (totals.j1f1 > totals.j1f2) f1w++; else if (totals.j1f2 > totals.j1f1) f2w++;
+                        if (totals.j2f1 > totals.j2f2) f1w++; else if (totals.j2f2 > totals.j2f1) f2w++;
+                        if (totals.j3f1 > totals.j3f2) f1w++; else if (totals.j3f2 > totals.j3f1) f2w++;
+
+                        if (f1w < 2 && f2w < 2 && extraRoundsCount < maxExtra) {
+                            tied = true;
+                            extraRoundsCount++;
+                            const k = state.rounds + extraRoundsCount;
+                            const r = Math.floor(Math.random() * 10000);
+                            if (r < params.f1Stop || r === 0) {
+                                isStoppage = true;
+                                stopRound = k;
+                                stopFighter = 1;
+                                break;
+                            } else if (r > params.f2Stop || r === 9999) {
+                                isStoppage = true;
+                                stopRound = k;
+                                stopFighter = 2;
+                                break;
+                            } else {
+                                const sc = scoreSingleRound(params, judge1bias, judge2bias, judge3bias);
+                                j1Rounds.push(sc.j1);
+                                j2Rounds.push(sc.j2);
+                                j3Rounds.push(sc.j3);
+                                totals = calcTotals();
+                            }
+                        }
+                    } while (tied);
+                }
+
+                let winner = 0;
+                let method = 'Decision';
+                let summaryText = '';
+                let lineResultText = '';
+
+                if (isStoppage) {
+                    winner = stopFighter;
+                    const winObj = (stopFighter === 1) ? f1 : f2;
+                    const loseObj = (stopFighter === 1) ? f2 : f1;
+
+                    if (state.mode === 0) {
+                        method = 'KO';
+                        summaryText = winObj.displayName + ' knocked out ' + loseObj.displayName + ' in the ' + formatOrdinal(stopRound) + ' round.';
+                    } else {
+                        const koProb = computeMmaKoProbability(winObj.style, loseObj.style);
+                        const koMax = Math.round(koProb * 10000.0) - 1;
+                        const roll = Math.floor(Math.random() * 10000);
+                        if (roll <= koMax) {
+                            method = 'KO';
+                            summaryText = winObj.displayName + ' knocked out ' + loseObj.displayName + ' in the ' + formatOrdinal(stopRound) + ' round.';
+                        } else {
+                            method = 'Submission';
+                            summaryText = winObj.displayName + ' defeated ' + loseObj.displayName + ' by submission in the ' + formatOrdinal(stopRound) + ' round.';
+                        }
+                    }
+
+                    lineResultText = f1.displayName + ' vs ' + f2.displayName + ' - ' + winObj.displayName + ' (' + method + ' R' + stopRound + ')';
+                } else {
+                    let f1Wins = 0, f2Wins = 0;
+                    if (totals.j1f1 > totals.j1f2) f1Wins++; else if (totals.j1f1 < totals.j1f2) f2Wins++;
+                    if (totals.j2f1 > totals.j2f2) f1Wins++; else if (totals.j2f1 < totals.j2f2) f2Wins++;
+                    if (totals.j3f1 > totals.j3f2) f1Wins++; else if (totals.j3f1 < totals.j3f2) f2Wins++;
+
+                    if (f1Wins === 3) {
+                        winner = 1;
+                        summaryText = f1.displayName + ' defeated ' + f2.displayName + ' by unanimous decision.';
+                    } else if (f2Wins === 3) {
+                        winner = 2;
+                        summaryText = f2.displayName + ' defeated ' + f1.displayName + ' by unanimous decision.';
+                    } else if (f1Wins === 2 && f2Wins === 1) {
+                        winner = 1;
+                        summaryText = f1.displayName + ' defeated ' + f2.displayName + ' by split decision.';
+                    } else if (f1Wins === 1 && f2Wins === 2) {
+                        winner = 2;
+                        summaryText = f2.displayName + ' defeated ' + f1.displayName + ' by split decision.';
+                    } else if (f1Wins === 2) {
+                        winner = 1;
+                        summaryText = f1.displayName + ' defeated ' + f2.displayName + ' by majority decision.';
+                    } else if (f2Wins === 2) {
+                        winner = 2;
+                        summaryText = f2.displayName + ' defeated ' + f1.displayName + ' by majority decision.';
+                    } else {
+                        winner = 0;
+                        method = 'Draw';
+                        summaryText = f1.displayName + ' fought ' + f2.displayName + ' to a draw.';
+                    }
+
+                    const sumF1 = totals.j1f1 + totals.j2f1 + totals.j3f1;
+                    const sumF2 = totals.j1f2 + totals.j2f2 + totals.j3f2;
+                    lineResultText = f1.displayName + ' ' + sumF1 + '-' + sumF2 + ' ' + f2.displayName;
+                }
+
+                return {
+                    f1: f1,
+                    f2: f2,
+                    isStoppage: isStoppage,
+                    stopRound: stopRound,
+                    winner: winner,
+                    method: method,
+                    judgeBiases: [judge1bias, judge2bias, judge3bias],
+                    completedRoundsCount: j1Rounds.length,
+                    extraRoundsCount: extraRoundsCount,
+                    j1Rounds: j1Rounds,
+                    j2Rounds: j2Rounds,
+                    j3Rounds: j3Rounds,
+                    totals: totals,
+                    summaryText: summaryText,
+                    lineResultText: lineResultText
+                };
+            }
+
+            function formatAsciiScorecards(bout) {
+                const completed = bout.completedRoundsCount;
+                if (completed === 0) {
+                    return bout.summaryText + '\n\n';
+                }
+
+                let longestName = Math.max(bout.f1.displayName.length, bout.f2.displayName.length);
+                if (longestName < 8) longestName = 8;
+
+                const judges = [
+                    { rounds: bout.j1Rounds, f1Tot: bout.totals.j1f1, f2Tot: bout.totals.j1f2 },
+                    { rounds: bout.j2Rounds, f1Tot: bout.totals.j2f1, f2Tot: bout.totals.j2f2 },
+                    { rounds: bout.j3Rounds, f1Tot: bout.totals.j3f1, f2Tot: bout.totals.j3f2 }
+                ];
+
+                let out = '';
+                for (let y = 0; y < 3; y++) {
+                    out += 'Judge ' + (y + 1) + '\n\n';
+                    out += 'Fighter' + ' '.repeat(longestName - 6);
+                    for (let r = 1; r <= completed; r++) {
+                        out += 'Round ' + r + ' ' + (r < 9 ? ' ' : '');
+                    }
+                    out += ' Total\n';
+
+                    out += bout.f1.displayName + ' '.repeat(longestName - bout.f1.displayName.length + 1);
+                    for (let r = 0; r < completed; r++) {
+                        const s = judges[y].rounds[r].f1;
+                        out += (s === 10 ? '     ' : '      ') + s + '  ';
+                    }
+                    out += '  ' + judges[y].f1Tot + '\n';
+
+                    out += bout.f2.displayName + ' '.repeat(longestName - bout.f2.displayName.length + 1);
+                    for (let r = 0; r < completed; r++) {
+                        const s = judges[y].rounds[r].f2;
+                        out += (s === 10 ? '     ' : '      ') + s + '  ';
+                    }
+                    out += '  ' + judges[y].f2Tot + '\n\n';
+                }
+
+                out += bout.summaryText + '\n\n';
+                return out;
+            }
+
+            // =========================================================================
+            // 5. DOM BUILDING & UI RENDERERS (CLEAN DOM APIs, NO NESTED TEMPLATES)
+            // =========================================================================
+            function createEl(tag, className, textContent) {
+                const el = document.createElement(tag);
+                if (className) el.className = className;
+                if (textContent !== undefined && textContent !== null) el.textContent = textContent;
+                return el;
+            }
+
+            function renderTopBarState() {
+                const btnBox = document.getElementById('btnModeBoxing');
+                const btnMMA = document.getElementById('btnModeMMA');
+                const thStyle = document.getElementById('thRosterStyle');
+
+                if (state.mode === 0) {
+                    btnBox.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-600 text-white shadow transition';
+                    btnMMA.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition';
+                    thStyle.textContent = 'Style (-5 Outboxer / +5 KO)';
+                } else {
+                    btnMMA.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white shadow transition';
+                    btnBox.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition';
+                    thStyle.textContent = 'Style (-5 Grappler / +5 Striker)';
+                }
+
+                document.getElementById('inputRounds').value = state.rounds;
+                document.getElementById('inputTiebreak').checked = state.tiebreak;
+            }
+
+            function syncConstantsInputs() {
+                const c = state.controls;
+                document.getElementById('inBoxStopBase').value = c.boxingStopBase;
+                document.getElementById('inMmaStopBase').value = c.mmaStopBase;
+                document.getElementById('inMaxRatioCap').value = c.maxRatioCap;
+                document.getElementById('inExponentK').value = c.exponentK;
+                document.getElementById('inFloorMode').value = c.floorMode;
+
+                const manIn = document.getElementById('inManualFloor');
+                manIn.value = c.manualFloor;
+                manIn.disabled = (c.floorMode !== 'manual');
+
+                document.getElementById('inJudgeBiasMax').value = c.judgeBiasMax;
+                document.getElementById('inMaxExtraRounds').value = c.maxExtraRounds;
+
+                document.getElementById('inBox10_9').value = c.box10_9;
+                document.getElementById('inBox10_8').value = c.box10_8;
+                document.getElementById('inBox10_7').value = c.box10_7;
+                document.getElementById('inMma10_9').value = c.mma10_9;
+                document.getElementById('inMma10_8').value = c.mma10_8;
+                document.getElementById('inMma10_7').value = c.mma10_7;
+
+                document.getElementById('inBoxAttWt').value = c.boxAttWt;
+                document.getElementById('inBoxDefWt').value = c.boxDefWt;
+                document.getElementById('inMmaWinWt').value = c.mmaWinWt;
+                document.getElementById('inMmaLoseWt').value = c.mmaLoseWt;
+            }
+
+            function syncRawTextareas() {
+                const fLines = [];
+                for (let i = 0; i < state.fighters.length; i++) {
+                    const f = state.fighters[i];
+                    const tag = (f.trigram || '').trim().toUpperCase();
+                    const skill = Number(f.skill) || 0;
+                    const style = clamp(Number(f.style) || 0, -5, 5);
+                    fLines.push(f.name + ';' + tag + ';' + skill + ' ' + style);
+                }
+                document.getElementById('txtRawFighters').value = fLines.join('\n');
+
+                const bLines = [];
+                for (let i = 0; i < state.bonuses.length; i++) {
+                    const b = state.bonuses[i];
+                    bLines.push((b.trigram || '').trim().toUpperCase() + ';' + (Number(b.skill) || 0));
+                }
+                document.getElementById('txtRawBonuses').value = bLines.join('\n');
+            }
+
+            function updateComputedRosterCells() {
+                const effFighters = getEffectiveFighters();
+                const floorVal = computeSkillFloor(effFighters);
+
+                document.getElementById('badgeRosterSummary').textContent =
+                    state.fighters.length + ' Fighters • ' + state.bonuses.length + ' Bonuses';
+                document.getElementById('badgeSkillFloor').textContent = 'Floor: ' + floorVal.toFixed(3);
+                document.getElementById('textFloorFormula').textContent =
+                    (state.controls.floorMode === 'manual') ? 'Manual override active' : 'min(0.1 * minPositive, 0.02 * maxSkill)';
+
+                const boutCount = Math.floor(state.fighters.length / 2);
+                document.getElementById('badgeBoutCount').textContent = boutCount + (boutCount === 1 ? ' Bout' : ' Bouts');
+
+                const oddNotice = document.getElementById('noticeOddRoster');
+                if (state.fighters.length > 0 && state.fighters.length % 2 !== 0) {
+                    oddNotice.classList.remove('hidden');
+                } else {
+                    oddNotice.classList.add('hidden');
+                }
+
+                const rows = document.getElementById('tbodyFighters').querySelectorAll('tr');
+                for (let i = 0; i < effFighters.length; i++) {
+                    const eff = effFighters[i];
+                    const row = rows[i];
+                    if (!row || row.children.length < 7) continue;
+
+                    const bonusCell = row.children[4];
+                    bonusCell.textContent = eff.bonusVal === 0 ? '0' : ((eff.bonusVal > 0 ? '+' : '') + eff.bonusVal.toFixed(1));
+                    bonusCell.className = 'py-2 px-2 font-mono text-xs ' + (eff.bonusVal > 0 ? 'text-emerald-400 font-semibold' : (eff.bonusVal < 0 ? 'text-rose-400' : 'text-slate-500'));
+
+                    const effCell = row.children[5];
+                    effCell.textContent = eff.skill <= 0
+                        ? ('0.0 (' + floorVal.toFixed(2) + ')')
+                        : eff.skill.toFixed(1);
+
+                    const styleLabel = row.children[6].querySelector('.style-desc');
+                    if (styleLabel) {
+                        styleLabel.textContent = describeStyle(eff.style, state.mode);
+                    }
+                }
+            }
+
+            function renderRosterTables() {
+                const effFighters = getEffectiveFighters();
+                const floorVal = computeSkillFloor(effFighters);
+
+                const tbodyF = document.getElementById('tbodyFighters');
+                tbodyF.innerHTML = '';
+
+                if (state.fighters.length === 0) {
+                    const tr = createEl('tr');
+                    const td = createEl('td', 'py-6 text-center text-slate-500 text-xs', 'No fighters in roster. Click "+ Add Fighter" or load a sample preset.');
+                    td.colSpan = 8;
+                    tr.appendChild(td);
+                    tbodyF.appendChild(tr);
+                } else {
+                    for (let i = 0; i < state.fighters.length; i++) {
+                        const f = state.fighters[i];
+                        const eff = effFighters[i];
+                        const tr = createEl('tr', 'hover:bg-slate-900/50 transition');
+
+                        // Col 1: Bout pairing badge
+                        const tdBout = createEl('td', 'py-2 px-3 font-mono text-xs whitespace-nowrap');
+                        const isOddLast = (i === state.fighters.length - 1) && (state.fighters.length % 2 !== 0);
+                        if (isOddLast) {
+                            tdBout.appendChild(createEl('span', 'px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px]', 'Sit Out'));
+                        } else {
+                            const boutNum = Math.floor(i / 2) + 1;
+                            const corner = (i % 2 === 0) ? 'Red' : 'Blue';
+                            const badgeCls = (i % 2 === 0)
+                                ? 'px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px]'
+                                : 'px-2 py-0.5 rounded bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[11px]';
+                            tdBout.appendChild(createEl('span', badgeCls, 'B' + boutNum + ' • ' + corner));
+                        }
+                        tr.appendChild(tdBout);
+
+                        // Col 2: Name
+                        const tdName = createEl('td', 'py-2 px-2.5');
+                        const inName = createEl('input', 'w-full min-w-[130px] bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-medium text-white focus:outline-none focus:border-rose-500');
+                        inName.type = 'text';
+                        inName.value = f.name;
+                        inName.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.fighters[idx].name = e.target.value;
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdName.appendChild(inName);
+                        tr.appendChild(tdName);
+
+                        // Col 3: Trigram
+                        const tdTag = createEl('td', 'py-2 px-2');
+                        const inTag = createEl('input', 'w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-xs uppercase text-slate-200 focus:outline-none focus:border-rose-500');
+                        inTag.type = 'text';
+                        inTag.maxLength = 5;
+                        inTag.value = f.trigram;
+                        inTag.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.fighters[idx].trigram = e.target.value.toUpperCase();
+                                updateComputedRosterCells();
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdTag.appendChild(inTag);
+                        tr.appendChild(tdTag);
+
+                        // Col 4: Base Skill
+                        const tdSkill = createEl('td', 'py-2 px-2');
+                        const inSkill = createEl('input', 'w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-xs text-white focus:outline-none focus:border-rose-500');
+                        inSkill.type = 'number';
+                        inSkill.step = '1';
+                        inSkill.min = '0';
+                        inSkill.value = f.skill;
+                        inSkill.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.fighters[idx].skill = parseFloat(e.target.value) || 0;
+                                updateComputedRosterCells();
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdSkill.appendChild(inSkill);
+                        tr.appendChild(tdSkill);
+
+                        // Col 5: Bonus (+)
+                        const bonusText = eff.bonusVal === 0 ? '0' : ((eff.bonusVal > 0 ? '+' : '') + eff.bonusVal.toFixed(1));
+                        const bonusCls = 'py-2 px-2 font-mono text-xs ' + (eff.bonusVal > 0 ? 'text-emerald-400 font-semibold' : (eff.bonusVal < 0 ? 'text-rose-400' : 'text-slate-500'));
+                        tr.appendChild(createEl('td', bonusCls, bonusText));
+
+                        // Col 6: Effective Skill
+                        const effText = eff.skill <= 0 ? ('0.0 (' + floorVal.toFixed(2) + ')') : eff.skill.toFixed(1);
+                        tr.appendChild(createEl('td', 'py-2 px-2 font-mono text-xs font-bold text-amber-300 whitespace-nowrap', effText));
+
+                        // Col 7: Style (-5.0 to +5.0)
+                        const tdStyle = createEl('td', 'py-2 px-2');
+                        const styleWrap = createEl('div', 'flex items-center gap-1.5');
+                        const inStyle = createEl('input', 'w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-xs text-slate-200 focus:outline-none focus:border-rose-500');
+                        inStyle.type = 'number';
+                        inStyle.step = '0.1';
+                        inStyle.min = '-5';
+                        inStyle.max = '5';
+                        inStyle.value = f.style;
+                        inStyle.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.fighters[idx].style = clamp(parseFloat(e.target.value) || 0, -5, 5);
+                                updateComputedRosterCells();
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        const descSpan = createEl('span', 'style-desc text-[10px] text-slate-400 truncate max-w-[90px]', describeStyle(eff.style, state.mode));
+                        styleWrap.appendChild(inStyle);
+                        styleWrap.appendChild(descSpan);
+                        tdStyle.appendChild(styleWrap);
+                        tr.appendChild(tdStyle);
+
+                        // Col 8: Delete
+                        const tdDel = createEl('td', 'py-2 px-2.5 text-right');
+                        const btnDel = createEl('button', 'px-2 py-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 text-xs font-bold transition', '✕');
+                        btnDel.type = 'button';
+                        btnDel.title = 'Remove Fighter';
+                        btnDel.addEventListener('click', (function (idx) {
+                            return function () {
+                                state.fighters.splice(idx, 1);
+                                renderRosterTables();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdDel.appendChild(btnDel);
+                        tr.appendChild(tdDel);
+
+                        tbodyF.appendChild(tr);
+                    }
+                }
+
+                // Render Bonuses Table
+                const tbodyB = document.getElementById('tbodyBonuses');
+                tbodyB.innerHTML = '';
+                if (state.bonuses.length === 0) {
+                    const tr = createEl('tr');
+                    const td = createEl('td', 'py-3 px-3 text-slate-500 text-xs', 'No active trigram bonuses.');
+                    td.colSpan = 3;
+                    tr.appendChild(td);
+                    tbodyB.appendChild(tr);
+                } else {
+                    for (let i = 0; i < state.bonuses.length; i++) {
+                        const b = state.bonuses[i];
+                        const tr = createEl('tr', 'hover:bg-slate-900/50 transition');
+
+                        const tdTag = createEl('td', 'py-1.5 px-3');
+                        const inTag = createEl('input', 'w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-xs uppercase text-amber-300 focus:outline-none focus:border-rose-500');
+                        inTag.type = 'text';
+                        inTag.maxLength = 5;
+                        inTag.value = b.trigram;
+                        inTag.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.bonuses[idx].trigram = e.target.value.toUpperCase();
+                                updateComputedRosterCells();
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdTag.appendChild(inTag);
+                        tr.appendChild(tdTag);
+
+                        const tdVal = createEl('td', 'py-1.5 px-3');
+                        const inVal = createEl('input', 'w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-xs text-emerald-300 focus:outline-none focus:border-rose-500');
+                        inVal.type = 'number';
+                        inVal.step = '0.5';
+                        inVal.value = b.skill;
+                        inVal.addEventListener('input', (function (idx) {
+                            return function (e) {
+                                state.bonuses[idx].skill = parseFloat(e.target.value) || 0;
+                                updateComputedRosterCells();
+                                syncRawTextareas();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdVal.appendChild(inVal);
+                        tr.appendChild(tdVal);
+
+                        const tdDel = createEl('td', 'py-1.5 px-3 text-right');
+                        const btnDel = createEl('button', 'px-2 py-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 text-xs font-bold transition', '✕');
+                        btnDel.type = 'button';
+                        btnDel.title = 'Remove Bonus';
+                        btnDel.addEventListener('click', (function (idx) {
+                            return function () {
+                                state.bonuses.splice(idx, 1);
+                                renderRosterTables();
+                                renderMonteCarloSelectorsAndPreview();
+                            };
+                        })(i));
+                        tdDel.appendChild(btnDel);
+                        tr.appendChild(tdDel);
+
+                        tbodyB.appendChild(tr);
+                    }
+                }
+
+                updateComputedRosterCells();
+                syncRawTextareas();
+            }
+
+            function renderMonteCarloSelectorsAndPreview() {
+                const effFighters = getEffectiveFighters();
+                const selA = document.getElementById('selMcFighterA');
+                const selB = document.getElementById('selMcFighterB');
+
+                selA.innerHTML = '';
+                selB.innerHTML = '';
+
+                if (effFighters.length === 0) {
+                    selA.appendChild(createEl('option', '', 'No fighters loaded'));
+                    selB.appendChild(createEl('option', '', 'No fighters loaded'));
+                    document.getElementById('mcPreFightBar').innerHTML = '';
+                    return;
+                }
+
+                if (state.mcIndexA >= effFighters.length) state.mcIndexA = 0;
+                if (state.mcIndexB >= effFighters.length) state.mcIndexB = effFighters.length > 1 ? 1 : 0;
+
+                for (let i = 0; i < effFighters.length; i++) {
+                    const f = effFighters[i];
+                    const sign = f.style > 0 ? '+' : '';
+                    const label = f.displayName + ' [Skill: ' + f.skill.toFixed(1) + ', Style: ' + sign + f.style.toFixed(1) + ']';
+
+                    const optA = createEl('option', '', label);
+                    optA.value = String(i);
+                    selA.appendChild(optA);
+
+                    const optB = createEl('option', '', label);
+                    optB.value = String(i);
+                    selB.appendChild(optB);
+                }
+
+                selA.value = String(state.mcIndexA);
+                selB.value = String(state.mcIndexB);
+
+                const fA = effFighters[state.mcIndexA];
+                const fB = effFighters[state.mcIndexB];
+                const floorVal = computeSkillFloor(effFighters);
+                const maxRatio = (Number(state.controls.maxRatioCap) >= 1) ? Number(state.controls.maxRatioCap) : 100.0;
+
+                const effA = fA.skill > 0 ? fA.skill : floorVal;
+                const effB = fB.skill > 0 ? fB.skill : floorVal;
+                const ratioA = clamp(effA / effB, 1.0 / maxRatio, maxRatio);
+                const ratioB = clamp(effB / effA, 1.0 / maxRatio, maxRatio);
+                const params = computeFightParameters(state.mode, ratioA, ratioB, fA.style, fB.style);
+
+                const bar = document.getElementById('mcPreFightBar');
+                bar.innerHTML = '';
+
+                function addPreviewStat(title, mainText, subText) {
+                    const box = createEl('div', 'bg-slate-900 border border-slate-800 rounded-lg p-2');
+                    box.appendChild(createEl('span', 'block text-[10px] text-slate-400', title));
+                    box.appendChild(createEl('span', 'block font-mono text-xs font-bold text-white mt-0.5', mainText));
+                    if (subText) box.appendChild(createEl('span', 'block text-[10px] font-mono text-slate-400 mt-0.5', subText));
+                    bar.appendChild(box);
+                }
+
+                addPreviewStat(
+                    'Effective Skills',
+                    effA.toFixed(1) + ' vs ' + effB.toFixed(1),
+                    'Ratio ' + ratioA.toFixed(2) + ' : 1'
+                );
+                addPreviewStat(
+                    'Round-Win Share',
+                    (params.p1Win * 100).toFixed(1) + '% / ' + ((1 - params.p1Win) * 100).toFixed(1) + '%',
+                    'k = ' + state.controls.exponentK
+                );
+                addPreviewStat(
+                    'Stoppage % / Rd',
+                    params.f1StopPct.toFixed(2) + '% vs ' + params.f2StopPct.toFixed(2) + '%',
+                    state.mode === 0 ? 'Boxing KO' : 'MMA Finish'
+                );
+
+                if (state.mode === 0) {
+                    addPreviewStat(
+                        'Style KO Multipliers',
+                        'A: ' + params.f1KoMult.toFixed(2) + 'x • B: ' + params.f2KoMult.toFixed(2) + 'x',
+                        describeStyle(fA.style, 0) + ' / ' + describeStyle(fB.style, 0)
+                    );
+                    addPreviewStat(
+                        'Scheduled Length',
+                        state.rounds + ' Rounds',
+                        state.tiebreak ? 'Sudden-death OT On' : 'Draws Allowed'
+                    );
+                } else {
+                    const koA = (computeMmaKoProbability(fA.style, fB.style) * 100).toFixed(0);
+                    const koB = (computeMmaKoProbability(fB.style, fA.style) * 100).toFixed(0);
+                    addPreviewStat(
+                        'A Finish Split',
+                        koA + '% KO / ' + (100 - Number(koA)) + '% Sub',
+                        describeStyle(fA.style, 1)
+                    );
+                    addPreviewStat(
+                        'B Finish Split',
+                        koB + '% KO / ' + (100 - Number(koB)) + '% Sub',
+                        describeStyle(fB.style, 1)
+                    );
+                }
+            }
+
+            function runMonteCarloSimulation() {
+                const effFighters = getEffectiveFighters();
+                if (effFighters.length === 0) {
+                    showToast('Add fighters first before running Monte Carlo.', true);
+                    return;
+                }
+
+                const fA = effFighters[state.mcIndexA] || effFighters[0];
+                const fB = effFighters[state.mcIndexB] || effFighters[0];
+                const floorVal = computeSkillFloor(effFighters);
+                const N = 1000;
+
+                let aWins = 0, bWins = 0, draws = 0;
+                let aKO = 0, aSub = 0, aDec = 0;
+                let bKO = 0, bSub = 0, bDec = 0;
+                let totalRounds = 0;
+
+                for (let i = 0; i < N; i++) {
+                    const res = simulateSingleBout(fA, fB, floorVal);
+                    totalRounds += res.isStoppage ? res.stopRound : res.completedRoundsCount;
+
+                    if (res.winner === 1) {
+                        aWins++;
+                        if (res.method === 'KO') aKO++;
+                        else if (res.method === 'Submission') aSub++;
+                        else aDec++;
+                    } else if (res.winner === 2) {
+                        bWins++;
+                        if (res.method === 'KO') bKO++;
+                        else if (res.method === 'Submission') bSub++;
+                        else bDec++;
+                    } else {
+                        draws++;
+                    }
+                }
+
+                const pctA = ((aWins / N) * 100).toFixed(1);
+                const pctB = ((bWins / N) * 100).toFixed(1);
+                const pctD = ((draws / N) * 100).toFixed(1);
+                const avgLen = (totalRounds / N).toFixed(2);
+
+                document.getElementById('mcSummaryHeader').textContent =
+                    fA.rawName + ' vs ' + fB.rawName + ' • ' + N + ' Simulated Bouts';
+
+                const barA = document.getElementById('mcBarA');
+                const barD = document.getElementById('mcBarDraw');
+                const barB = document.getElementById('mcBarB');
+
+                barA.style.width = pctA + '%';
+                barA.textContent = Number(pctA) >= 9 ? (pctA + '%') : '';
+
+                barD.style.width = pctD + '%';
+                barD.textContent = Number(pctD) >= 7 ? (pctD + '%') : '';
+
+                barB.style.width = pctB + '%';
+                barB.textContent = Number(pctB) >= 9 ? (pctB + '%') : '';
+
+                // Method Breakdown Cards
+                const statsGrid = document.getElementById('mcStatsGrid');
+                statsGrid.innerHTML = '';
+
+                function addStatCard(label, mainVal, subVal, accentClass) {
+                    const card = createEl('div', 'bg-slate-900 border border-slate-800 rounded-xl p-2.5');
+                    card.appendChild(createEl('span', 'block text-[10px] font-semibold truncate ' + accentClass, label));
+                    card.appendChild(createEl('span', 'block font-mono text-sm font-extrabold text-white mt-0.5', mainVal));
+                    card.appendChild(createEl('span', 'block font-mono text-[10px] text-slate-400 mt-0.5', subVal));
+                    statsGrid.appendChild(card);
+                }
+
+                const aSubLine = state.mode === 1
+                    ? (aKO + ' KO • ' + aSub + ' Sub • ' + aDec + ' Dec')
+                    : (aKO + ' KO • ' + aDec + ' Dec');
+                const bSubLine = state.mode === 1
+                    ? (bKO + ' KO • ' + bSub + ' Sub • ' + bDec + ' Dec')
+                    : (bKO + ' KO • ' + bDec + ' Dec');
+
+                addStatCard(fA.rawName + ' Wins', aWins + ' (' + pctA + '%)', aSubLine, 'text-rose-400');
+                addStatCard(fB.rawName + ' Wins', bWins + ' (' + pctB + '%)', bSubLine, 'text-sky-400');
+                addStatCard('Draws', draws + ' (' + pctD + '%)', state.tiebreak ? 'Max OT reached' : 'Regulation ties', 'text-slate-400');
+                addStatCard('Avg Fight Length', avgLen + ' rds', 'Stoppage rate: ' + (((aKO + aSub + bKO + bSub) / N) * 100).toFixed(1) + '%', 'text-amber-400');
+
+                // Estimated UK Fractional Betting Odds Board
+                const oddsBoard = document.getElementById('mcBettingOddsBoard');
+                oddsBoard.innerHTML = '';
+
+                const boardHeader = createEl('div', 'flex flex-wrap items-center justify-between gap-2 mb-3');
+                boardHeader.appendChild(createEl('h3', 'text-xs font-bold uppercase tracking-wider text-amber-400', 'Estimated Bookmaker Odds (UK Fractional & Moneyline)'));
+                boardHeader.appendChild(createEl('span', 'text-[11px] font-mono text-slate-400', 'Derived from 1,000-bout implied probabilities'));
+                oddsBoard.appendChild(boardHeader);
+
+                // Market 1: To Win Bout
+                const winMarketWrap = createEl('div', 'mb-3.5');
+                winMarketWrap.appendChild(createEl('div', 'text-[11px] font-semibold text-slate-300 mb-1.5', 'To Win Bout (Match Winner)'));
+                const winCols = (!state.tiebreak || draws > 0) ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2';
+                const winGrid = createEl('div', 'grid ' + winCols + ' gap-2');
+
+                function createOddsChip(selectionName, count, borderColorClass, nameColorClass) {
+                    const prob = count / N;
+                    const odds = formatUkBettingOdds(prob);
+                    const chip = createEl('div', 'bg-slate-900 border ' + borderColorClass + ' rounded-xl px-3 py-2 flex items-center justify-between gap-2');
+
+                    const left = createEl('div', 'min-w-0');
+                    left.appendChild(createEl('div', 'text-xs font-semibold truncate ' + nameColorClass, selectionName));
+                    left.appendChild(createEl('div', 'text-[10px] font-mono text-slate-400', 'Implied: ' + odds.impliedPct + ' (' + count + '/' + N + ')'));
+
+                    const right = createEl('div', 'text-right shrink-0');
+                    right.appendChild(createEl('div', 'font-mono text-sm font-extrabold text-amber-300', odds.fractional));
+                    right.appendChild(createEl('div', 'font-mono text-[10px] text-slate-400', odds.moneyline));
+
+                    chip.appendChild(left);
+                    chip.appendChild(right);
+                    return chip;
+                }
+
+                winGrid.appendChild(createOddsChip(fA.rawName + ' to Win', aWins, 'border-rose-500/30', 'text-rose-300'));
+                if (!state.tiebreak || draws > 0) {
+                    winGrid.appendChild(createOddsChip('Draw', draws, 'border-slate-700', 'text-slate-300'));
+                }
+                winGrid.appendChild(createOddsChip(fB.rawName + ' to Win', bWins, 'border-sky-500/30', 'text-sky-300'));
+                winMarketWrap.appendChild(winGrid);
+                oddsBoard.appendChild(winMarketWrap);
+
+                // Market 2: Method of Victory Props
+                const propMarketWrap = createEl('div');
+                propMarketWrap.appendChild(createEl('div', 'text-[11px] font-semibold text-slate-300 mb-1.5', 'Method of Victory Props'));
+                const propGrid = createEl('div', 'grid grid-cols-1 sm:grid-cols-2 gap-2');
+
+                propGrid.appendChild(createOddsChip(fA.rawName + ' by KO/TKO', aKO, 'border-slate-800', 'text-rose-300'));
+                propGrid.appendChild(createOddsChip(fB.rawName + ' by KO/TKO', bKO, 'border-slate-800', 'text-sky-300'));
+
+                if (state.mode === 1) {
+                    propGrid.appendChild(createOddsChip(fA.rawName + ' by Submission', aSub, 'border-slate-800', 'text-rose-300'));
+                    propGrid.appendChild(createOddsChip(fB.rawName + ' by Submission', bSub, 'border-slate-800', 'text-sky-300'));
+                }
+
+                propGrid.appendChild(createOddsChip(fA.rawName + ' by Decision', aDec, 'border-slate-800', 'text-rose-300'));
+                propGrid.appendChild(createOddsChip(fB.rawName + ' by Decision', bDec, 'border-slate-800', 'text-sky-300'));
+
+                propMarketWrap.appendChild(propGrid);
+                oddsBoard.appendChild(propMarketWrap);
+            }
+
+            // =========================================================================
+            // 6. FIGHT CARD SIMULATION & RESULTS RENDERING (TRIGGERED BY USER ONLY)
+            // =========================================================================
+            function renderReadyPlaceholder() {
+                state.hasSimulatedCard = false;
+                state.lastResultsTxt = '';
+                state.lastLineResultsTxt = '';
+
+                document.getElementById('panelOutResults').textContent = 'No simulation run yet. Click "Simulate Fight Card" above to generate results.txt.';
+                document.getElementById('panelOutLine').textContent = 'No simulation run yet. Click "Simulate Fight Card" above to generate lineresults.txt.';
+
+                const container = document.getElementById('panelOutVisual');
+                container.innerHTML = '';
+
+                const box = createEl('div', 'bg-slate-950/80 border border-dashed border-slate-700 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-2');
+                box.appendChild(createEl('div', 'w-11 h-11 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 font-mono font-extrabold text-sm', '10-9'));
+                box.appendChild(createEl('h3', 'text-sm sm:text-base font-bold text-slate-200', 'Ready to Simulate Fight Card'));
+                box.appendChild(createEl('p', 'text-xs text-slate-400 max-w-md', 'Configure your fighters, bonuses, and engine parameters above, then click "Simulate Fight Card" to generate judge scorecards and bout outcomes.'));
+                container.appendChild(box);
+            }
+
+            function runFightCardSimulation() {
+                const effFighters = getEffectiveFighters();
+                const numBouts = Math.floor(effFighters.length / 2);
+
+                if (numBouts === 0) {
+                    showToast('Need at least 2 fighters in the roster to simulate a fight card.', true);
+                    return;
+                }
+
+                const floorVal = computeSkillFloor(effFighters);
+                const bouts = [];
+                let fullResultsTxt = '';
+                let fullLineTxt = '';
+
+                for (let i = 0; i < numBouts; i++) {
+                    const f1 = effFighters[i * 2];
+                    const f2 = effFighters[i * 2 + 1];
+                    const bout = simulateSingleBout(f1, f2, floorVal);
+                    bouts.push(bout);
+                    fullResultsTxt += formatAsciiScorecards(bout);
+                    fullLineTxt += bout.lineResultText + '\n';
+                }
+
+                state.hasSimulatedCard = true;
+                state.lastResultsTxt = fullResultsTxt.trimEnd() + '\n';
+                state.lastLineResultsTxt = fullLineTxt;
+
+                document.getElementById('panelOutResults').textContent = state.lastResultsTxt;
+                document.getElementById('panelOutLine').textContent = state.lastLineResultsTxt;
+
+                renderVisualScorecards(bouts);
+                showToast('Simulated ' + numBouts + (numBouts === 1 ? ' bout.' : ' bouts.'));
+            }
+
+            function renderVisualScorecards(bouts) {
+                const container = document.getElementById('panelOutVisual');
+                container.innerHTML = '';
+
+                for (let bIdx = 0; bIdx < bouts.length; bIdx++) {
+                    const bout = bouts[bIdx];
+                    const completed = bout.completedRoundsCount;
+
+                    const card = createEl('div', 'bg-slate-950/70 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3');
+
+                    // Header row
+                    const topRow = createEl('div', 'flex flex-wrap items-center justify-between gap-2');
+                    topRow.appendChild(createEl('span', 'text-[11px] font-mono uppercase tracking-wider text-slate-400', 'Bout #' + (bIdx + 1) + ' • ' + (state.mode === 0 ? 'Boxing' : 'MMA')));
+
+                    let badgeCls = 'text-[11px] font-mono px-2.5 py-0.5 rounded-full border ';
+                    if (bout.winner === 1) badgeCls += 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+                    else if (bout.winner === 2) badgeCls += 'bg-sky-500/15 text-sky-300 border-sky-500/30';
+                    else badgeCls += 'bg-slate-800 text-slate-300 border-slate-700';
+
+                    const badgeText = bout.isStoppage
+                        ? (bout.method + ' • Round ' + bout.stopRound)
+                        : (bout.method + (bout.extraRoundsCount > 0 ? (' (+' + bout.extraRoundsCount + ' OT)') : ''));
+                    topRow.appendChild(createEl('span', badgeCls, badgeText));
+                    card.appendChild(topRow);
+
+                    // Outcome Summary Banner
+                    card.appendChild(createEl('div', 'px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 font-semibold text-xs sm:text-sm text-white', bout.summaryText));
+
+                    // Reference Judge Biases (visual reference only)
+                    const biasRow = createEl('div', 'flex flex-wrap items-center gap-1.5');
+                    biasRow.appendChild(createEl('span', 'text-[11px] text-slate-500 mr-1', 'Ref Judge Biases:'));
+
+                    for (let j = 0; j < 3; j++) {
+                        const bVal = bout.judgeBiases[j] || 0;
+                        const signed = bVal > 0 ? ('+' + bVal) : String(bVal);
+                        let chipCls = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[11px] font-mono ';
+                        let lean = 'Neutral';
+                        if (bVal < 0) {
+                            chipCls += 'bg-rose-950/50 border-rose-500/30 text-rose-300';
+                            lean = 'F1 lean';
+                        } else if (bVal > 0) {
+                            chipCls += 'bg-sky-950/50 border-sky-500/30 text-sky-300';
+                            lean = 'F2 lean';
+                        } else {
+                            chipCls += 'bg-slate-900 border-slate-800 text-slate-400';
+                        }
+                        biasRow.appendChild(createEl('span', chipCls, 'Judge ' + (j + 1) + ': ' + signed + ' (' + lean + ')'));
+                    }
+                    card.appendChild(biasRow);
+
+                    // Completed-rounds-only Judge Scorecards
+                    if (completed > 0) {
+                        if (bout.isStoppage) {
+                            card.appendChild(createEl('p', 'text-[11px] text-slate-400', 'Completed rounds 1–' + completed + ' prior to Round ' + bout.stopRound + ' stoppage:'));
+                        }
+
+                        const judges = [
+                            { name: 'Judge 1', rounds: bout.j1Rounds, f1Tot: bout.totals.j1f1, f2Tot: bout.totals.j1f2 },
+                            { name: 'Judge 2', rounds: bout.j2Rounds, f1Tot: bout.totals.j2f1, f2Tot: bout.totals.j2f2 },
+                            { name: 'Judge 3', rounds: bout.j3Rounds, f1Tot: bout.totals.j3f1, f2Tot: bout.totals.j3f2 }
+                        ];
+
+                        const tablesWrap = createEl('div', 'flex flex-col gap-2.5');
+                        for (let y = 0; y < 3; y++) {
+                            const jData = judges[y];
+                            const tblBox = createEl('div', 'overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80');
+                            const tbl = createEl('table', 'w-full text-xs border-collapse');
+
+                            const thead = createEl('thead');
+                            const hRow = createEl('tr', 'border-b border-slate-800 bg-slate-900/90');
+                            hRow.appendChild(createEl('th', 'py-1.5 px-2.5 text-left font-bold text-amber-400 min-w-[140px]', jData.name));
+
+                            for (let r = 0; r < completed; r++) {
+                                const isOT = (r + 1) > state.rounds;
+                                hRow.appendChild(createEl('th', 'py-1.5 px-2 text-center font-mono ' + (isOT ? 'text-amber-400' : 'text-slate-400'), 'R' + (r + 1) + (isOT ? '*' : '')));
+                            }
+                            hRow.appendChild(createEl('th', 'py-1.5 px-2.5 text-center font-bold text-slate-200 bg-slate-800/60', 'Total'));
+                            thead.appendChild(hRow);
+                            tbl.appendChild(thead);
+
+                            const tbody = createEl('tbody', 'divide-y divide-slate-800/60');
+
+                            // Fighter 1 Row
+                            const tr1 = createEl('tr');
+                            tr1.appendChild(createEl('td', 'py-1.5 px-2.5 font-semibold text-rose-300 truncate max-w-[170px]', bout.f1.displayName));
+                            for (let r = 0; r < completed; r++) {
+                                const pts = jData.rounds[r].f1;
+                                tr1.appendChild(createEl('td', 'py-1.5 px-2 text-center font-mono ' + (pts === 10 ? 'font-bold text-white' : 'text-slate-400'), String(pts)));
+                            }
+                            tr1.appendChild(createEl('td', 'py-1.5 px-2.5 text-center font-mono font-extrabold text-white bg-slate-800/40', String(jData.f1Tot)));
+                            tbody.appendChild(tr1);
+
+                            // Fighter 2 Row
+                            const tr2 = createEl('tr');
+                            tr2.appendChild(createEl('td', 'py-1.5 px-2.5 font-semibold text-sky-300 truncate max-w-[170px]', bout.f2.displayName));
+                            for (let r = 0; r < completed; r++) {
+                                const pts = jData.rounds[r].f2;
+                                tr2.appendChild(createEl('td', 'py-1.5 px-2 text-center font-mono ' + (pts === 10 ? 'font-bold text-white' : 'text-slate-400'), String(pts)));
+                            }
+                            tr2.appendChild(createEl('td', 'py-1.5 px-2.5 text-center font-mono font-extrabold text-white bg-slate-800/40', String(jData.f2Tot)));
+                            tbody.appendChild(tr2);
+
+                            tbl.appendChild(tbody);
+                            tblBox.appendChild(tbl);
+                            tablesWrap.appendChild(tblBox);
+                        }
+                        card.appendChild(tablesWrap);
+                    }
+
+                    container.appendChild(card);
+                }
+            }
+
+            // =========================================================================
+            // 7. COLLAPSIBLE SECTIONS & PRESET MANAGEMENT
+            // =========================================================================
+            function setSectionExpanded(sectionKey, isOpen) {
+                state.sectionsOpen[sectionKey] = isOpen;
+                const map = {
+                    roster: { body: 'bodySectionRoster', chevron: 'chevronRoster' },
+                    constants: { body: 'bodySectionConstants', chevron: 'chevronConstants' },
+                    monteCarlo: { body: 'bodySectionMonteCarlo', chevron: 'chevronMonteCarlo' }
+                };
+                const entry = map[sectionKey];
+                const bodyEl = document.getElementById(entry.body);
+                const chevEl = document.getElementById(entry.chevron);
+                if (isOpen) {
+                    bodyEl.classList.remove('hidden');
+                    chevEl.style.transform = 'rotate(0deg)';
+                } else {
+                    bodyEl.classList.add('hidden');
+                    chevEl.style.transform = 'rotate(-90deg)';
+                }
+                updateCollapseAllButtonLabel();
+            }
+
+            function updateCollapseAllButtonLabel() {
+                const anyOpen = state.sectionsOpen.roster || state.sectionsOpen.constants || state.sectionsOpen.monteCarlo;
+                document.getElementById('btnToggleAllSections').textContent = anyOpen ? 'Collapse All' : 'Expand All';
+            }
+
+            function loadPreset(presetName) {
+                const p = PRESETS[presetName];
+                state.mode = p.mode;
+                state.rounds = p.rounds;
+                state.tiebreak = p.tiebreak;
+                state.fighters = [];
+                for (let i = 0; i < p.fighters.length; i++) {
+                    state.fighters.push({
+                        name: p.fighters[i].name,
+                        trigram: p.fighters[i].trigram,
+                        skill: p.fighters[i].skill,
+                        style: p.fighters[i].style
+                    });
+                }
+                state.bonuses = [];
+                for (let i = 0; i < p.bonuses.length; i++) {
+                    state.bonuses.push({
+                        trigram: p.bonuses[i].trigram,
+                        skill: p.bonuses[i].skill
+                    });
+                }
+                state.mcIndexA = 0;
+                state.mcIndexB = 1;
+
+                renderTopBarState();
+                renderRosterTables();
+                renderMonteCarloSelectorsAndPreview();
+                runMonteCarloSimulation();
+                renderReadyPlaceholder();
+            }
+
+            // =========================================================================
+            // 8. EVENT LISTENERS
+            // =========================================================================
+            document.getElementById('btnModeBoxing').addEventListener('click', function () {
+                state.mode = 0;
+                if (state.rounds === 3 || state.rounds === 5) state.rounds = 12;
+                renderTopBarState();
+                updateComputedRosterCells();
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('btnModeMMA').addEventListener('click', function () {
+                state.mode = 1;
+                if (state.rounds === 12 || state.rounds === 10) state.rounds = 3;
+                renderTopBarState();
+                updateComputedRosterCells();
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('inputRounds').addEventListener('input', function (e) {
+                const val = parseInt(e.target.value, 10);
+                if (val >= 1 && val <= 50) {
+                    state.rounds = val;
+                    renderMonteCarloSelectorsAndPreview();
+                }
+            });
+
+            document.getElementById('inputTiebreak').addEventListener('change', function (e) {
+                state.tiebreak = e.target.checked;
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('btnPresetBoxing').addEventListener('click', function () {
+                loadPreset('boxing');
+                showToast('Loaded Boxing Sample (6 fighters). Ready to simulate.');
+            });
+
+            document.getElementById('btnPresetMMA').addEventListener('click', function () {
+                loadPreset('mma');
+                showToast('Loaded MMA Sample (6 fighters). Ready to simulate.');
+            });
+
+            document.getElementById('btnToggleAllSections').addEventListener('click', function () {
+                const anyOpen = state.sectionsOpen.roster || state.sectionsOpen.constants || state.sectionsOpen.monteCarlo;
+                const nextState = !anyOpen;
+                setSectionExpanded('roster', nextState);
+                setSectionExpanded('constants', nextState);
+                setSectionExpanded('monteCarlo', nextState);
+            });
+
+            document.getElementById('headerSectionRoster').addEventListener('click', function () {
+                setSectionExpanded('roster', !state.sectionsOpen.roster);
+            });
+
+            document.getElementById('headerSectionConstants').addEventListener('click', function (e) {
+                if (e.target.closest('#btnResetConstants')) return;
+                setSectionExpanded('constants', !state.sectionsOpen.constants);
+            });
+
+            document.getElementById('headerSectionMonteCarlo').addEventListener('click', function () {
+                setSectionExpanded('monteCarlo', !state.sectionsOpen.monteCarlo);
+            });
+
+            document.getElementById('tabEditorTable').addEventListener('click', function () {
+                document.getElementById('tabEditorTable').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white transition';
+                document.getElementById('tabEditorRaw').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+                document.getElementById('viewEditorTable').classList.remove('hidden');
+                document.getElementById('viewEditorRaw').classList.add('hidden');
+                document.getElementById('viewEditorRaw').classList.remove('flex');
+            });
+
+            document.getElementById('tabEditorRaw').addEventListener('click', function () {
+                syncRawTextareas();
+                document.getElementById('tabEditorRaw').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white transition';
+                document.getElementById('tabEditorTable').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+                document.getElementById('viewEditorRaw').classList.remove('hidden');
+                document.getElementById('viewEditorRaw').classList.add('flex');
+                document.getElementById('viewEditorTable').classList.add('hidden');
+            });
+
+            document.getElementById('btnAddFighter').addEventListener('click', function () {
+                const num = state.fighters.length + 1;
+                state.fighters.push({
+                    name: 'Fighter ' + num,
+                    trigram: 'NEW',
+                    skill: 60,
+                    style: 0.0
+                });
+                renderRosterTables();
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('btnAddBonus').addEventListener('click', function () {
+                state.bonuses.push({
+                    trigram: 'NEW',
+                    skill: 1.0
+                });
+                renderRosterTables();
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('btnApplyRawFiles').addEventListener('click', function () {
+                const rawF = document.getElementById('txtRawFighters').value;
+                const rawB = document.getElementById('txtRawBonuses').value;
+
+                const parsedF = [];
+                const fLines = rawF.split(/\r?\n/);
+                for (let i = 0; i < fLines.length; i++) {
+                    const line = fLines[i].trim();
+                    if (!line) continue;
+                    const parts = line.split(';');
+                    if (parts.length < 3) continue;
+                    const name = parts[0].trim();
+                    const trigram = parts[1].trim().toUpperCase();
+                    const tokens = parts[2].trim().split(/\s+/);
+                    const skill = parseFloat(tokens[0]) || 0;
+                    const style = tokens.length > 1 ? clamp(parseFloat(tokens[1]) || 0, -5, 5) : 0;
+                    parsedF.push({ name: name, trigram: trigram, skill: skill, style: style });
+                }
+
+                const parsedB = [];
+                const bLines = rawB.split(/\r?\n/);
+                for (let i = 0; i < bLines.length; i++) {
+                    const line = bLines[i].trim();
+                    if (!line) continue;
+                    const parts = line.split(';');
+                    if (parts.length < 2) continue;
+                    const trigram = parts[0].trim().toUpperCase();
+                    const skill = parseFloat(parts[1].trim()) || 0;
+                    if (trigram) parsedB.push({ trigram: trigram, skill: skill });
+                }
+
+                state.fighters = parsedF;
+                state.bonuses = parsedB;
+                renderRosterTables();
+                renderMonteCarloSelectorsAndPreview();
+                showToast('Applied ' + parsedF.length + ' fighters & ' + parsedB.length + ' bonuses.');
+            });
+
+            document.getElementById('btnResetConstants').addEventListener('click', function (e) {
+                e.stopPropagation();
+                state.controls = defaultControls();
+                syncConstantsInputs();
+                updateComputedRosterCells();
+                renderMonteCarloSelectorsAndPreview();
+                showToast('Engine constants reset to defaults.');
+            });
+
+            const constantBindings = [
+                { id: 'inBoxStopBase', key: 'boxingStopBase', type: 'float' },
+                { id: 'inMmaStopBase', key: 'mmaStopBase', type: 'float' },
+                { id: 'inMaxRatioCap', key: 'maxRatioCap', type: 'float' },
+                { id: 'inExponentK', key: 'exponentK', type: 'float' },
+                { id: 'inFloorMode', key: 'floorMode', type: 'str' },
+                { id: 'inManualFloor', key: 'manualFloor', type: 'float' },
+                { id: 'inJudgeBiasMax', key: 'judgeBiasMax', type: 'int' },
+                { id: 'inMaxExtraRounds', key: 'maxExtraRounds', type: 'int' },
+                { id: 'inBox10_9', key: 'box10_9', type: 'float' },
+                { id: 'inBox10_8', key: 'box10_8', type: 'float' },
+                { id: 'inBox10_7', key: 'box10_7', type: 'float' },
+                { id: 'inMma10_9', key: 'mma10_9', type: 'float' },
+                { id: 'inMma10_8', key: 'mma10_8', type: 'float' },
+                { id: 'inMma10_7', key: 'mma10_7', type: 'float' },
+                { id: 'inBoxAttWt', key: 'boxAttWt', type: 'float' },
+                { id: 'inBoxDefWt', key: 'boxDefWt', type: 'float' },
+                { id: 'inMmaWinWt', key: 'mmaWinWt', type: 'float' },
+                { id: 'inMmaLoseWt', key: 'mmaLoseWt', type: 'float' }
+            ];
+
+            for (let i = 0; i < constantBindings.length; i++) {
+                (function (item) {
+                    const el = document.getElementById(item.id);
+                    if (!el) return;
+                    el.addEventListener('input', function () {
+                        if (item.type === 'str') {
+                            state.controls[item.key] = el.value;
+                            document.getElementById('inManualFloor').disabled = (el.value !== 'manual');
+                        } else if (item.type === 'int') {
+                            state.controls[item.key] = parseInt(el.value, 10) || 0;
+                        } else {
+                            state.controls[item.key] = parseFloat(el.value) || 0;
+                        }
+                        updateComputedRosterCells();
+                        renderMonteCarloSelectorsAndPreview();
+                    });
+                })(constantBindings[i]);
+            }
+
+            document.getElementById('selMcFighterA').addEventListener('change', function (e) {
+                state.mcIndexA = parseInt(e.target.value, 10) || 0;
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('selMcFighterB').addEventListener('change', function (e) {
+                state.mcIndexB = parseInt(e.target.value, 10) || 0;
+                renderMonteCarloSelectorsAndPreview();
+            });
+
+            document.getElementById('btnRunMonteCarlo').addEventListener('click', function () {
+                runMonteCarloSimulation();
+            });
+
+            document.getElementById('btnSimulateCard').addEventListener('click', function () {
+                runFightCardSimulation();
+                const resSection = document.getElementById('sectionResults');
+                if (resSection && resSection.scrollIntoView) {
+                    resSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+
+            document.getElementById('btnClearResults').addEventListener('click', function () {
+                renderReadyPlaceholder();
+                showToast('Results cleared.');
+            });
+
+            function switchOutputTab(tab) {
+                const tabs = {
+                    visual: document.getElementById('tabOutVisual'),
+                    results: document.getElementById('tabOutResults'),
+                    line: document.getElementById('tabOutLine')
+                };
+                const panels = {
+                    visual: document.getElementById('panelOutVisual'),
+                    results: document.getElementById('panelOutResults'),
+                    line: document.getElementById('panelOutLine')
+                };
+                const keys = ['visual', 'results', 'line'];
+                for (let i = 0; i < keys.length; i++) {
+                    const k = keys[i];
+                    if (k === tab) {
+                        tabs[k].className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white transition' + (k !== 'visual' ? ' font-mono' : '');
+                        panels[k].classList.remove('hidden');
+                    } else {
+                        tabs[k].className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition' + (k !== 'visual' ? ' font-mono' : '');
+                        panels[k].classList.add('hidden');
+                    }
+                }
+            }
+
+            document.getElementById('tabOutVisual').addEventListener('click', function () { switchOutputTab('visual'); });
+            document.getElementById('tabOutResults').addEventListener('click', function () { switchOutputTab('results'); });
+            document.getElementById('tabOutLine').addEventListener('click', function () { switchOutputTab('line'); });
+
+            function copyTextFallback(text, label) {
+                if (!state.hasSimulatedCard) {
+                    showToast('Simulate the fight card first before copying.', true);
+                    return;
+                }
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Copied ' + label + ' to clipboard.');
+                } catch (err) {
+                    showToast('Unable to copy ' + label + '.', true);
+                }
+                document.body.removeChild(ta);
+            }
+
+            function downloadTextFile(text, filename) {
+                if (!state.hasSimulatedCard) {
+                    showToast('Simulate the fight card first before downloading.', true);
+                    return;
+                }
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Downloaded ' + filename + '.');
+            }
+
+            document.getElementById('btnCopyResults').addEventListener('click', function () {
+                copyTextFallback(state.lastResultsTxt, 'results.txt');
+            });
+            document.getElementById('btnDownloadResults').addEventListener('click', function () {
+                downloadTextFile(state.lastResultsTxt, 'results.txt');
+            });
+            document.getElementById('btnCopyLine').addEventListener('click', function () {
+                copyTextFallback(state.lastLineResultsTxt, 'lineresults.txt');
+            });
+            document.getElementById('btnDownloadLine').addEventListener('click', function () {
+                downloadTextFile(state.lastLineResultsTxt, 'lineresults.txt');
+            });
+
+            // =========================================================================
+            // 9. INITIALIZE DEFAULT PRESET ON STARTUP (NO AUTO CARD SIMULATION)
+            // =========================================================================
+            syncConstantsInputs();
+            loadPreset('boxing');
+        })();
+    </script>
+</body>
+</html>
